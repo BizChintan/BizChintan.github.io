@@ -1,0 +1,3093 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chintan Dhamecha — Digital Transformation &amp; Operations</title>
+<meta name="description" content="Chintan Dhamecha — Digital Transformation &amp; Operations professional. Mission-control portfolio." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     CONTROL TOWER — Chintan Dhamecha
+     dark mission-control portfolio · teal + amber · mono data
+     ============================================================ */
+
+  :root{
+    --bg:        #070912;
+    --bg-2:      #0a0d1a;
+    --panel:     #0d1420;
+    --panel-2:   #121d2c;
+    --line:      rgba(120,170,175,0.14);
+    --line-2:    rgba(120,170,175,0.28);
+    --ink:       #dfe9e8;
+    --ink-dim:   #8fa3a4;
+    --ink-faint: #7b9091;
+    --teal:      #2fe3c4;
+    --teal-deep: #14a58f;
+    --amber:     #ffb347;
+    --amber-deep:#e0871f;
+    --danger:    #ff5c5c;
+    --font-display: "Saira Condensed", "Arial Narrow", sans-serif;
+    --font-sans:    "Barlow", system-ui, -apple-system, sans-serif;
+    --font-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --ease: cubic-bezier(.16,.84,.34,1);
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+
+  [hidden]{ display:none !important; }
+
+  html{ scroll-behavior:smooth; overflow-x:hidden; }
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-sans);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+
+  ::selection{ background:var(--teal); color:#02110e; }
+
+  a{ color:var(--teal); text-underline-offset:3px; }
+
+  h1,h2,h3{ margin:0; font-weight:600; }
+
+  .mono{ font-family:var(--font-mono); }
+
+  /* ---------- background canvas + overlays ---------- */
+  #bg{
+    position:fixed; inset:0; width:100%; height:100%;
+    z-index:0; pointer-events:none;
+    background:
+      radial-gradient(1200px 760px at 78% 6%,  rgba(70,120,255,0.11), transparent 62%),
+      radial-gradient(1000px 900px at 10% 82%, rgba(255,150,70,0.07), transparent 60%),
+      radial-gradient(1500px 900px at 52% 128%, rgba(40,200,180,0.06), transparent 60%),
+      radial-gradient(900px 700px at 88% 96%, rgba(150,90,255,0.06), transparent 60%),
+      linear-gradient(180deg, #06080f 0%, #080b16 45%, #0a0d1a 100%);
+  }
+  /* static texture only — no mix-blend-mode: a full-screen blended layer
+     forces the compositor to re-blend against the animating #bg canvas
+     every frame, which was a primary source of scroll jank. */
+  .scanlines{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom, rgba(255,255,255,0.02) 0 1px, transparent 1px 3px);
+  }
+  .vignette{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    box-shadow:inset 0 0 260px 30px rgba(2,4,10,0.78);
+  }
+
+  /* ---------- layout shell ---------- */
+  .skip{
+    position:fixed; left:12px; top:-60px; z-index:200;
+    background:var(--teal); color:#02110e; padding:10px 16px;
+    font-family:var(--font-mono); font-size:13px; text-decoration:none;
+    transition:top .2s var(--ease);
+  }
+  .skip:focus{ top:12px; }
+
+  .wrap{ position:relative; z-index:2; }
+
+  .topbar{
+    position:relative; z-index:2;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    padding:16px clamp(18px,4vw,52px);
+    border-bottom:1px solid var(--line);
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.12em;
+    color:var(--ink-dim); text-transform:uppercase;
+    /* no backdrop-filter — a blurred backdrop over the animating canvas
+       repaints every scroll frame; a solid-ish gradient reads the same. */
+    background:linear-gradient(180deg, rgba(8,13,15,0.95), rgba(8,13,15,0.6));
+  }
+  .wordmark{
+    color:var(--ink); letter-spacing:.34em; font-weight:600;
+    display:flex; align-items:center; gap:10px;
+  }
+  .wordmark::before{
+    content:""; width:9px; height:9px; background:var(--teal);
+    box-shadow:0 0 12px var(--teal); border-radius:1px;
+    animation:pulse 2.6s var(--ease) infinite;
+  }
+  .topbar .sep{ flex:1; }
+  .topbar .clock{ color:var(--teal); }
+  .sound-toggle{
+    appearance:none; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px;
+    background:none; border:1px solid var(--line-2); color:var(--ink-dim);
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; padding:6px 12px; min-height:32px;
+    transition:color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .sound-toggle .st-dot{
+    width:7px; height:7px; border-radius:50%; flex:none;
+    background:var(--ink-faint);
+    transition:background .2s var(--ease), box-shadow .2s var(--ease);
+  }
+  .sound-toggle:hover, .sound-toggle:focus-visible{ color:var(--ink); border-color:var(--teal); }
+  .sound-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .sound-toggle[aria-pressed="true"]{ color:var(--teal); border-color:var(--teal); }
+  .sound-toggle[aria-pressed="true"] .st-dot{ background:var(--teal); box-shadow:0 0 8px var(--teal); }
+  @media (pointer:coarse){ .sound-toggle{ min-height:44px; } }
+
+  main{ position:relative; z-index:2; }
+
+  section{ padding:clamp(48px,8vw,110px) clamp(18px,4vw,52px); }
+
+  .sec-h{
+    font-family:var(--font-mono); font-weight:500;
+    font-size:clamp(12px,1.6vw,14px); letter-spacing:.24em;
+    text-transform:uppercase; color:var(--teal);
+    display:flex; align-items:center; gap:12px; margin:0 0 6px;
+  }
+  .sec-h::after{
+    content:""; flex:1; height:1px;
+    background:linear-gradient(90deg,var(--line-2),transparent);
+  }
+  .sec-sub{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.08em;
+    color:var(--ink-faint); text-transform:uppercase; margin:0 0 34px;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative; isolation:isolate;
+    min-height:calc(100vh - 52px);
+    display:flex; flex-direction:column; justify-content:center;
+    gap:26px; max-width:1180px; min-width:0;
+  }
+  /* legibility scrim between the canvas sun and the hero text */
+  .hero::before{
+    content:""; position:absolute; z-index:-1;
+    left:-16vw; right:-4vw; top:-16vh; bottom:-12vh;
+    background:radial-gradient(70% 58% at 26% 44%,
+      rgba(6,8,15,0.86) 0%, rgba(6,8,15,0.62) 34%, rgba(6,8,15,0.18) 62%, rgba(6,8,15,0) 78%);
+    pointer-events:none;
+  }
+  .hero > *{ max-width:100%; min-width:0; position:relative; }
+  .kicker{
+    font-size:12px; letter-spacing:.34em; text-transform:uppercase;
+    color:var(--amber); margin:0; overflow-wrap:anywhere;
+  }
+
+  .name-btn{
+    appearance:none; background:none; border:0; padding:0; margin:0;
+    display:block; text-align:left; cursor:pointer; color:inherit;
+    font-family:var(--font-display);
+    line-height:.92; letter-spacing:.005em;
+    position:relative;
+  }
+  .name-line{
+    display:block;
+    font-size:clamp(3.2rem, 13vw, 9.2rem);
+    font-weight:700; text-transform:uppercase;
+    color:var(--ink);
+    transition:transform .5s var(--ease), color .3s var(--ease);
+    text-shadow:0 0 4px rgba(4,6,12,0.85), 0 0 26px rgba(4,6,12,0.72),
+                0 3px 18px rgba(4,6,12,0.62), 0 0 64px rgba(255,179,71,0.12);
+  }
+  .name-line:last-of-type{ color:#c8d4d3; }
+  .name-btn:hover .name-line,
+  .name-btn:focus-visible .name-line{ color:var(--teal); transform:translateX(10px); }
+  .name-btn:hover .name-line:last-of-type,
+  .name-btn:focus-visible .name-line:last-of-type{ color:var(--ink); }
+  .name-hint{
+    display:inline-flex; align-items:center; gap:8px; margin-top:16px;
+    font-size:12px; letter-spacing:.28em; text-transform:uppercase;
+    color:var(--teal); background:transparent;
+    border:1px solid var(--line-2);
+    padding:7px 13px 6px;
+    clip-path:polygon(0 0,100% 0,100% 100%,10px 100%,0 calc(100% - 10px));
+    opacity:.72;
+    transition:opacity .3s var(--ease), color .3s var(--ease),
+               background .3s var(--ease), border-color .3s var(--ease);
+  }
+  .name-hint::before{
+    content:""; width:7px; height:7px; background:var(--teal);
+    box-shadow:0 0 10px var(--teal); flex:none;
+  }
+  .name-btn:hover .name-hint,
+  .name-btn:focus-visible .name-hint{
+    opacity:1; color:var(--bg); background:var(--teal); border-color:var(--teal);
+  }
+  .name-btn:hover .name-hint::before,
+  .name-btn:focus-visible .name-hint::before{ background:var(--bg); box-shadow:none; }
+  .name-btn::after{
+    content:""; position:absolute; left:0; bottom:-14px;
+    width:64px; height:3px; background:var(--amber);
+    box-shadow:0 0 16px var(--amber);
+  }
+
+  .role{
+    font-size:clamp(12px,2vw,17px); letter-spacing:.28em;
+    text-transform:uppercase; color:var(--ink-dim); margin:14px 0 0;
+    overflow-wrap:anywhere;
+  }
+  .role span{ color:var(--amber); }
+
+  .summary{
+    max-width:56ch; color:var(--ink-dim);
+    font-size:clamp(15px,1.6vw,17px); margin:0;
+    overflow-wrap:anywhere;
+  }
+
+  .status-strip{
+    list-style:none; margin:14px 0 0; padding:0;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+    background:var(--line); border:1px solid var(--line);
+  }
+  .status-strip li{
+    background:var(--panel); padding:18px 16px 16px;
+    display:flex; flex-direction:column; gap:6px;
+    position:relative; overflow:hidden;
+  }
+  .status-strip li::before{
+    content:""; position:absolute; top:0; left:0; width:100%; height:2px;
+    background:var(--teal); opacity:.5;
+  }
+  .status-strip li:nth-child(2)::before{ background:var(--amber); }
+  .status-strip li:nth-child(3)::before{ background:var(--teal); }
+  .status-strip li:nth-child(4)::before{ background:var(--amber); }
+  .stat-val{
+    font-family:var(--font-display); font-weight:700;
+    font-size:clamp(2.1rem,4.6vw,3.2rem); line-height:1;
+    color:var(--ink); letter-spacing:.01em;
+  }
+  .stat-val .u{ font-size:.42em; color:var(--teal); margin-left:4px; letter-spacing:.1em; }
+  .stat-lbl{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--ink-faint); line-height:1.4;
+  }
+
+  .availability{
+    display:inline-flex; align-items:center; gap:12px; margin:6px 0 0;
+    font-size:11.5px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-dim); padding:9px 16px;
+    border:1px solid var(--line-2); background:rgba(20,165,143,0.06);
+    max-width:100%;
+  }
+  .availability .dot{
+    width:9px; height:9px; border-radius:50%; background:var(--teal);
+    box-shadow:0 0 0 0 rgba(47,227,196,0.55);
+    animation:ping 2.4s var(--ease) infinite; flex:none;
+  }
+
+  /* ---------- TIMELINE ---------- */
+  .timeline-sec{ border-top:1px solid var(--line); background:linear-gradient(180deg,transparent,rgba(9,14,16,0.5)); }
+  .timeline{
+    list-style:none; margin:0; padding:64px 0 8px;
+    display:flex; position:relative; gap:0;
+  }
+  .timeline::before{
+    content:""; position:absolute; left:8px; right:8px; top:64px; height:2px;
+    background:linear-gradient(90deg,var(--teal-deep),var(--teal),var(--amber));
+    opacity:.55;
+  }
+  .timeline li{ flex:1; position:relative; padding:0 10px; }
+
+  .tl-marker{
+    appearance:none; cursor:pointer; width:100%; text-align:left;
+    background:none; border:0; padding:28px 0 0; color:inherit;
+    display:block; position:relative;
+  }
+  .tl-year{
+    position:absolute; top:-40px; left:12px;
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.14em;
+    color:var(--amber); text-transform:uppercase; display:block;
+    transition:color .25s var(--ease);
+  }
+  .tl-dot{
+    position:absolute; top:-8px; left:12px;
+    width:16px; height:16px; border-radius:50%;
+    background:var(--bg); border:2px solid var(--teal);
+    box-shadow:0 0 0 4px var(--bg), 0 0 16px rgba(47,227,196,0.5);
+    transition:transform .3s var(--ease), background .3s var(--ease), border-color .3s var(--ease);
+  }
+  .tl-body{
+    display:block; margin-top:0; padding:16px 16px 18px;
+    border:1px solid var(--line); background:var(--panel);
+    transition:border-color .25s var(--ease), transform .25s var(--ease), background .25s var(--ease);
+    position:relative;
+  }
+  .tl-body::after{
+    content:"▸ PULL LOG"; position:absolute; right:12px; bottom:10px;
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.16em;
+    color:var(--ink-faint); opacity:0; transform:translateX(-4px);
+    transition:opacity .25s var(--ease), transform .25s var(--ease);
+  }
+  .tl-co{
+    display:block;
+    font-family:var(--font-display); font-weight:600; text-transform:uppercase;
+    font-size:clamp(1.15rem,2.1vw,1.5rem); letter-spacing:.02em; color:var(--ink);
+    line-height:1.05;
+  }
+  .tl-title{
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--teal); margin-top:6px; display:block;
+  }
+  .tl-loc{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.08em;
+    color:var(--ink-faint); margin-top:4px; display:block;
+  }
+  .tl-marker:hover .tl-body,
+  .tl-marker:focus-visible .tl-body{ border-color:var(--teal); transform:translateY(-4px); background:var(--panel-2); }
+  .tl-marker:hover .tl-body::after,
+  .tl-marker:focus-visible .tl-body::after{ opacity:1; transform:translateX(0); }
+  .tl-marker:hover .tl-dot,
+  .tl-marker:focus-visible .tl-dot{ background:var(--teal); transform:scale(1.15); }
+  .tl-marker:hover .tl-year,
+  .tl-marker:focus-visible .tl-year{ color:var(--teal); }
+  .tl-marker[aria-expanded="true"] .tl-dot{ background:var(--amber); border-color:var(--amber); }
+  .tl-marker[aria-expanded="true"] .tl-body{ border-color:var(--amber); }
+
+  /* academic record — teal-keyed variant of the same timeline */
+  .timeline--edu::before{ background:linear-gradient(90deg,var(--teal-deep),var(--teal),var(--teal-deep)); }
+  .timeline--edu .tl-year{ color:var(--teal); }
+  .timeline--edu .tl-title{ color:var(--amber); }
+  .timeline--edu .tl-marker:hover .tl-dot,
+  .timeline--edu .tl-marker:focus-visible .tl-dot{ background:var(--teal); }
+  .timeline--edu .tl-marker[aria-expanded="true"] .tl-dot{ background:var(--teal); border-color:var(--teal); }
+  .timeline--edu .tl-marker[aria-expanded="true"] .tl-body{ border-color:var(--teal); }
+  .timeline--edu .tl-body::after{ content:"▸ OPEN RECORD"; }
+
+  .flare-hint{
+    margin:0; font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink-faint); opacity:.72;
+    transition:opacity .7s var(--ease);
+  }
+  .flare-hint.spent{ opacity:0; }
+
+  /* ---------- SKILL CONSTELLATION ---------- */
+  .skills-sec{ border-top:1px solid var(--line); }
+  .constellation{
+    position:relative; width:100%; height:min(64vh,560px);
+    border:1px solid var(--line);
+    background:
+      linear-gradient(rgba(120,170,175,0.05) 1px,transparent 1px) 0 0/44px 44px,
+      linear-gradient(90deg,rgba(120,170,175,0.05) 1px,transparent 1px) 0 0/44px 44px,
+      radial-gradient(700px 380px at 70% 30%, rgba(47,227,196,0.06), transparent 70%),
+      var(--bg-2);
+    overflow:hidden;
+  }
+  #links{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  /* the link web is drawn ONCE (no per-frame loop); a compositor-only
+     opacity pulse is all the motion it needs. Disabled when static. */
+  @keyframes linkPulse{ 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
+  .constellation:not(.is-static) #links{ animation:linkPulse 7s ease-in-out infinite; }
+
+  .node{
+    position:absolute; top:0; left:0;
+    transform:translate(-50%,-50%);
+    appearance:none; border:0; cursor:pointer;
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.04em;
+    padding:7px 11px; white-space:nowrap;
+    color:var(--ink-dim); background:rgba(13,20,24,0.82);
+    border:1px solid var(--line-2);
+    transition:color .2s var(--ease), border-color .2s var(--ease),
+               background .2s var(--ease), box-shadow .2s var(--ease);
+  }
+  .node .pip{
+    display:inline-block; width:6px; height:6px; margin-right:7px;
+    vertical-align:middle; border-radius:50%;
+    background:var(--teal); box-shadow:0 0 8px var(--teal);
+  }
+  .node[data-cat="tech"]{ border-color:rgba(47,227,196,0.4); }
+  .node[data-cat="tech"] .pip{ background:var(--teal); box-shadow:0 0 8px var(--teal); }
+  .node[data-cat="core"]{ border-color:rgba(255,179,71,0.4); }
+  .node[data-cat="core"] .pip{ background:var(--amber); box-shadow:0 0 8px var(--amber); }
+  .node[data-cat="soft"]{ border-style:dashed; border-color:var(--line-2); }
+  .node[data-cat="soft"] .pip{ background:var(--ink-dim); box-shadow:none; }
+
+  .node:hover,.node:focus-visible{
+    color:var(--ink); background:var(--panel-2);
+    box-shadow:0 0 0 1px var(--teal), 0 6px 26px rgba(0,0,0,0.5);
+    z-index:6;
+  }
+  .node[aria-pressed="true"]{
+    color:#02110e; background:var(--teal); border-color:var(--teal);
+    box-shadow:0 0 26px rgba(47,227,196,0.5); z-index:7;
+  }
+  .node[aria-pressed="true"] .pip{ background:#02110e; box-shadow:none; }
+  .node[data-cat="core"][aria-pressed="true"]{ background:var(--amber); border-color:var(--amber); box-shadow:0 0 26px rgba(255,179,71,0.5); }
+
+  .legend{
+    margin-top:16px; font-size:11px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+
+  /* static fallback list (reduced motion / no-JS) */
+  .node-fallback{ display:none; }
+
+  /* ---------- SKILL READOUT (popover) ---------- */
+  .readout{
+    position:fixed; z-index:120;
+    width:min(320px,calc(100vw - 32px));
+    background:var(--panel); border:1px solid var(--teal);
+    box-shadow:0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(47,227,196,0.15);
+    padding:0; font-family:var(--font-sans);
+    animation:pop .28s var(--ease);
+  }
+  .readout[data-cat="core"]{ border-color:var(--amber); }
+  .readout-hd{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+    padding:14px 14px 12px; border-bottom:1px solid var(--line);
+    background:var(--panel-2);
+  }
+  .readout-hd h3{
+    font-family:var(--font-display); font-weight:600; text-transform:uppercase;
+    font-size:1.15rem; letter-spacing:.02em; line-height:1.05; color:var(--ink);
+  }
+  .readout-cat{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--teal); display:block; margin-bottom:4px;
+  }
+  .readout[data-cat="core"] .readout-cat{ color:var(--amber); }
+  .readout-body{ padding:14px; }
+  .gauge{
+    display:flex; align-items:center; gap:14px; margin-bottom:12px;
+  }
+  .gauge svg{ flex:none; }
+  .gauge-num{
+    font-family:var(--font-display); font-weight:700; font-size:2.4rem;
+    line-height:1; color:var(--ink);
+  }
+  .gauge-num small{ font-size:.4em; color:var(--ink-faint); letter-spacing:.1em; }
+  .gauge-cap{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  .readout-origin{
+    font-size:13.5px; color:var(--ink-dim); margin:0;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+  .readout-origin b{ color:var(--ink); font-weight:600; }
+
+  .icon-btn{
+    appearance:none; cursor:pointer; flex:none;
+    width:28px; height:28px; display:grid; place-items:center;
+    background:none; border:1px solid var(--line-2); color:var(--ink-dim);
+    font-family:var(--font-mono); font-size:14px; line-height:1;
+    transition:color .2s,border-color .2s,background .2s;
+  }
+  .icon-btn:hover,.icon-btn:focus-visible{ color:var(--ink); border-color:var(--teal); background:rgba(47,227,196,0.08); }
+
+  /* ---------- AMBIENT SPACE-FACT LAYER + PLANET HIT TARGETS ----------
+     Both layers sit above the content plane so their buttons are
+     clickable/focusable, but the containers pass clicks through.
+     Motion is CSS-keyframe (compositor-only) — no JS loop, no listeners
+     beyond each button's click; disabled wholesale by reduced-motion. */
+  .spacefacts, .planet-hits{
+    position:fixed; inset:0; z-index:3; pointer-events:none;
+  }
+  .spacefacts .spacefact, .planet-hits .planet-hit{ pointer-events:auto; }
+
+  @keyframes factDrift{
+    0%   { transform:translate3d(0,0,0); }
+    50%  { transform:translate3d(var(--dx,10px), var(--dy,-8px), 0); }
+    100% { transform:translate3d(0,0,0); }
+  }
+  .spacefact{
+    position:fixed; margin:0; border:0; background:none; cursor:pointer;
+    padding:6px 4px;
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--ink-faint); white-space:nowrap;
+    opacity:.16;
+    animation:factDrift var(--dur,26s) ease-in-out var(--delay,0s) infinite;
+    transition:opacity .25s var(--ease), color .25s var(--ease);
+  }
+  .spacefact::before{ content:"✦ "; color:var(--teal); opacity:.5; }
+  .spacefact:hover, .spacefact:focus-visible{ opacity:.72; color:var(--teal); outline:none; }
+  .spacefact:focus-visible{ opacity:.9; box-shadow:0 0 0 1px var(--line-2); }
+  .spacefact[aria-expanded="true"]{ opacity:.92; color:var(--teal); }
+
+  .planet-hit{
+    position:fixed; left:0; top:0; width:34px; height:34px;
+    margin:0; padding:0; border:0; background:none; cursor:pointer;
+    border-radius:50%;
+    transition:box-shadow .2s var(--ease), background .2s var(--ease);
+  }
+  .planet-hit:hover, .planet-hit:focus-visible{
+    outline:none;
+    background:radial-gradient(circle, rgba(47,227,196,0.18), transparent 70%);
+    box-shadow:0 0 0 1px rgba(47,227,196,0.6);
+  }
+  .planet-hit[aria-expanded="true"]{ box-shadow:0 0 0 1px var(--teal); }
+
+  /* shared lightweight popover for space facts + planet facts —
+     same visual language as .readout, lighter than the .overlay modals */
+  .factpop{
+    position:fixed; z-index:120;
+    width:min(300px, calc(100vw - 32px));
+    background:var(--panel); border:1px solid var(--teal);
+    box-shadow:0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(47,227,196,0.15);
+    font-family:var(--font-sans);
+    animation:pop .24s var(--ease);
+  }
+  .factpop-hd{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 12px 10px; border-bottom:1px solid var(--line); background:var(--panel-2);
+  }
+  .factpop-label{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--teal);
+  }
+  .factpop-text{ margin:0; padding:14px; font-size:13.5px; line-height:1.6; color:var(--ink-dim); }
+
+  @media (max-width:640px){
+    .spacefact{ font-size:9px; letter-spacing:.16em; opacity:.14; }
+    .spacefact.sf-hide-sm{ display:none; }
+  }
+  @media (pointer:coarse){ .planet-hit{ width:44px; height:44px; } }
+  .sun-hit{ width:64px; height:64px; }
+  @media (pointer:coarse){ .sun-hit{ width:76px; height:76px; } }
+
+  /* ---------- NEGATIVE COLOUR GRADING (Sun easter egg) ----------
+     The invert filter is applied to exactly ONE element — #invertwrap,
+     which holds all page content. #bg (the fixed canvas), the ambient
+     layers and the overlays stay outside it, so nothing is filtered
+     twice and there is no repeated repaint. Permanent until reload —
+     no click/Escape undo. */
+  #invertwrap{ position:relative; z-index:2; transition:filter .8s ease; }
+  body.inverted #invertwrap{ filter:invert(1) hue-rotate(180deg); }
+
+  /* live click readout beside the Sun — site telemetry-label treatment.
+     Positioned inside #invertwrap (document flow), NOT fixed: it lives in the
+     same stacking context as the page content, sits below main/topbar (z-index:2)
+     so page sections cover it as they scroll past, and never rises above a modal. */
+  .sun-counter{
+    position:absolute; left:0; top:0; z-index:1; pointer-events:none;
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-dim); white-space:nowrap;
+    background:rgba(7,9,18,0.72); padding:4px 8px; border:1px solid var(--line-2);
+  }
+  .sun-counter::before{ content:"◦ "; color:var(--teal); }
+  .sun-counter b{ color:var(--teal); font-weight:600; }
+
+  /* persistent "system collapse" callout — reuses the .factpop popover look */
+  .egg-popup{
+    position:fixed; z-index:122; width:min(300px, calc(100vw - 32px));
+    background:var(--panel); border:1px solid var(--danger);
+    box-shadow:0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,92,92,0.15);
+    animation:pop .3s var(--ease);
+  }
+  .egg-popup-hd{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 10px 8px; border-bottom:1px solid var(--line); background:var(--panel-2);
+  }
+  .egg-popup-label{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--danger);
+  }
+  .egg-popup-text{
+    margin:0; padding:12px; font-size:13px; line-height:1.55; color:var(--ink);
+  }
+
+  /* short veil used only under reduced-motion as the cross-fade */
+  #eggfade{
+    position:fixed; inset:0; z-index:130; pointer-events:none;
+    background:#05060a; opacity:0;
+  }
+
+  /* ---------- OVERLAYS (modal shared) ---------- */
+  /* no backdrop-filter: blurring the whole viewport re-samples every frame
+     while the panel scales open — an opaque scrim reads the same and stays smooth */
+  .overlay{
+    position:fixed; inset:0; z-index:100;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    background:rgba(3,6,9,0.86);
+    animation:fade .22s var(--ease);
+  }
+  .overlay.closing{ animation:fade .18s var(--ease) reverse forwards; }
+
+  /* ---------- ID BADGE (contact) ---------- */
+  .badge-scene{ width:min(420px,100%); perspective:1600px; }
+  .badge{
+    position:relative; width:100%; min-height:544px;
+    transform-style:preserve-3d;
+    transition:transform .7s var(--ease);
+    animation:badgeIn .5s var(--ease);
+  }
+  .badge.flipped{ transform:rotateY(180deg); }
+  .badge-face{
+    position:absolute; inset:0; backface-visibility:hidden;
+    background:linear-gradient(170deg,var(--panel-2),var(--panel));
+    border:1px solid var(--line-2);
+    box-shadow:0 40px 90px rgba(0,0,0,0.6);
+    display:flex; flex-direction:column;
+  }
+  .badge-back{ transform:rotateY(180deg); }
+
+  .badge-lanyard{
+    height:26px; background:
+      repeating-linear-gradient(45deg,var(--teal-deep) 0 10px, #0c3b34 10px 20px);
+    position:relative; flex:none;
+  }
+  .badge-lanyard::after{
+    content:""; position:absolute; left:50%; bottom:-9px; transform:translateX(-50%);
+    width:46px; height:16px; background:var(--panel);
+    border:1px solid var(--line-2); border-radius:2px;
+  }
+  .badge-hd{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 20px 12px;
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  .badge-hd .lvl{ color:var(--teal); border:1px solid var(--line-2); padding:3px 7px; }
+  .badge-id{
+    padding:4px 20px 0;
+  }
+  .badge-photo{
+    width:96px; height:96px; flex:none; margin:6px 20px 0;
+    border:1px solid var(--line-2); background:
+      radial-gradient(circle at 50% 38%, var(--teal-deep), transparent 60%),
+      repeating-linear-gradient(0deg,rgba(255,255,255,0.04) 0 2px,transparent 2px 4px),
+      var(--bg);
+    display:grid; place-items:center;
+    font-family:var(--font-display); font-weight:700; font-size:2.4rem;
+    color:var(--ink); letter-spacing:.04em;
+  }
+  .badge-name{
+    font-family:var(--font-display); font-weight:700; text-transform:uppercase;
+    font-size:2rem; line-height:1; color:var(--ink); padding:16px 20px 2px;
+  }
+  .badge-role{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--teal); padding:0 20px 14px;
+  }
+  .badge-rows{ list-style:none; margin:0; padding:6px 20px 18px; display:flex; flex-direction:column; gap:1px; background:var(--line); border-top:1px solid var(--line); }
+  .badge-rows li{ background:var(--panel); }
+  .badge-rows a, .badge-rows span.val{
+    display:flex; align-items:baseline; gap:12px;
+    padding:11px 4px; text-decoration:none;
+    font-family:var(--font-mono); font-size:13px; color:var(--ink);
+    transition:color .18s,background .18s; word-break:break-all;
+  }
+  .badge-rows a:hover,.badge-rows a:focus-visible{ color:var(--teal); background:rgba(47,227,196,0.06); }
+  .badge-rows .k{
+    flex:none; width:66px; color:var(--ink-faint);
+    font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+  }
+  .badge-ft{
+    margin-top:auto; display:flex; gap:1px; background:var(--line); border-top:1px solid var(--line);
+  }
+  .badge-ft button{
+    flex:1; appearance:none; cursor:pointer; background:var(--panel);
+    border:0; color:var(--ink-dim); padding:14px 10px;
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; transition:color .18s,background .18s;
+  }
+  .badge-ft button:hover,.badge-ft button:focus-visible{ color:var(--teal); background:var(--panel-2); }
+  .badge-barcode{
+    height:34px; margin:0 20px 16px;
+    background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 9px);
+    opacity:.5;
+  }
+  .badge-back .badge-sec{ padding:16px 20px; }
+  .badge-back h3{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--teal); margin:0 0 8px;
+  }
+  .badge-back ul{ list-style:none; margin:0 0 4px; padding:0; }
+  .badge-back li{
+    font-family:var(--font-mono); font-size:11.5px; color:var(--ink-dim);
+    padding:5px 0; border-bottom:1px solid var(--line); line-height:1.4;
+  }
+  .badge-back li b{ color:var(--ink); font-weight:600; }
+
+  /* ---------- ROLE DETAIL PANEL — centred, ~3/4 of the viewport ---------- */
+  .panel-overlay{ padding:clamp(16px,4vw,44px); }
+  .role-panel{
+    --rp-px: clamp(22px, 3.2vw, 42px);           /* generous, breakpoint-fluid gutter */
+    width:min(1180px, 75vw);
+    max-height:min(900px, 75vh);
+    overflow-y:auto;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--amber);
+    box-shadow:0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,179,71,0.10);
+    animation:pop .3s var(--ease);
+    padding:0 0 34px;
+  }
+  .overlay.closing .role-panel,
+  .overlay.closing .cert-modal{ animation:pop .16s var(--ease) reverse forwards; }
+  .rp-hd{
+    position:sticky; top:0; z-index:2;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+    padding:24px var(--rp-px) 18px;
+    /* solid (was backdrop-filter): a sticky header re-blurring scrolling
+       content every frame is costly; opaque hides it just as well */
+    background:var(--panel-2);
+    border-bottom:1px solid var(--line-2);
+  }
+  .rp-tag{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--amber); display:block; margin-bottom:8px;
+  }
+  .rp-co{
+    font-family:var(--font-display); font-weight:700; text-transform:uppercase;
+    font-size:clamp(1.6rem,4vw,2.2rem); line-height:1; color:var(--ink);
+  }
+  .rp-title{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--teal); margin-top:8px; display:block;
+  }
+  .rp-meta{
+    display:flex; flex-wrap:wrap; gap:8px; padding:18px var(--rp-px) 4px;
+  }
+  .rp-meta span{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--ink-dim);
+    border:1px solid var(--line-2); padding:5px 9px;
+  }
+  .rp-block{ padding:22px var(--rp-px) 0; }
+  .rp-block h4{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--ink-faint); margin:0 0 10px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .rp-block h4::before{ content:""; width:14px; height:1px; background:var(--teal); }
+  .rp-block p{ margin:0 0 12px; color:var(--ink-dim); font-size:clamp(14.5px,1.5vw,16px); line-height:1.6; max-width:72ch; }
+
+  .rp-metric{
+    margin:10px var(--rp-px) 0; padding:18px 20px;
+    border:1px solid var(--amber); background:rgba(255,179,71,0.06);
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .rp-metric .big{
+    font-family:var(--font-display); font-weight:700;
+    font-size:clamp(1.5rem,4vw,2rem); color:var(--ink); line-height:1.05;
+  }
+  .rp-metric .cap{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--amber);
+  }
+
+  .rp-skills{ list-style:none; margin:12px 0 0; padding:0 var(--rp-px); display:flex; flex-wrap:wrap; gap:7px; }
+  .rp-skills li{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.03em;
+    color:var(--ink-dim); border:1px solid var(--line-2); padding:6px 10px;
+    background:var(--panel);
+  }
+
+  /* ---------- FOOTER ---------- */
+  .foot{
+    position:relative; z-index:2;
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    padding:20px clamp(18px,4vw,52px);
+    border-top:1px solid var(--line);
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .foot button{
+    appearance:none; cursor:pointer; background:none;
+    border:1px solid var(--line-2); color:var(--ink-dim);
+    padding:8px 14px; font-family:var(--font-mono); font-size:11px;
+    letter-spacing:.16em; text-transform:uppercase;
+    transition:color .18s,border-color .18s,background .18s;
+  }
+  .foot button:hover,.foot button:focus-visible{ color:var(--teal); border-color:var(--teal); background:rgba(47,227,196,0.06); }
+
+  /* ---------- keyframes ---------- */
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.3; } }
+  @keyframes ping{
+    0%{ box-shadow:0 0 0 0 rgba(47,227,196,0.5); }
+    70%{ box-shadow:0 0 0 12px rgba(47,227,196,0); }
+    100%{ box-shadow:0 0 0 0 rgba(47,227,196,0); }
+  }
+  @keyframes fade{ from{ opacity:0; } to{ opacity:1; } }
+  /* scale-from-origin: panels/popovers set transform-origin to the clicked
+     element (see emergeOrigin in script) so the box grows out of the click */
+  @keyframes pop{ from{ opacity:0; transform:scale(.82); } to{ opacity:1; transform:none; } }
+  @keyframes badgeIn{ from{ opacity:0; transform:translateY(24px) rotateX(8deg); } to{ opacity:1; transform:none; } }
+
+  /* constellation collapsed to a tidy wrapped field (mobile + reduced-motion) */
+  .constellation.is-static{
+    height:auto; min-height:220px; padding:18px;
+    display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start;
+  }
+  .constellation.is-static #links{ display:none; }
+  .constellation.is-static .node{ position:static; transform:none !important; white-space:normal; }
+
+  /* ============================================================
+     PROJECTS — case files (scroll-snap filmstrip)
+     ============================================================ */
+  .casefiles-sec{ border-top:1px solid var(--line); background:linear-gradient(180deg,rgba(255,179,71,0.045),transparent 42%); }
+  .cf-hint{
+    display:flex; align-items:center; gap:10px; margin:0 0 16px;
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  .cf-hint::before{ content:"◂"; color:var(--amber); }
+  .cf-hint::after{ content:"▸"; color:var(--amber); }
+  .casefiles{
+    display:flex; gap:20px; padding:16px 4px 26px;
+    overflow-x:auto; overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    scrollbar-color:var(--amber-deep) rgba(120,170,175,0.12);
+  }
+  .casefiles:focus-visible{ outline:2px solid var(--teal); outline-offset:4px; }
+  .casefiles::-webkit-scrollbar{ height:8px; }
+  .casefiles::-webkit-scrollbar-track{ background:rgba(120,170,175,0.12); }
+  .casefiles::-webkit-scrollbar-thumb{ background:var(--amber-deep); border-radius:0; }
+  .casefile{
+    flex:0 0 min(86vw,400px);
+    scroll-snap-align:center;
+    position:relative; isolation:isolate;
+    display:flex; flex-direction:column; gap:11px;
+    text-align:left; cursor:pointer; color:inherit;
+    padding:30px 22px 20px;
+    background:linear-gradient(160deg,var(--panel-2),var(--panel));
+    border:1px solid var(--line-2); border-left:3px solid var(--amber);
+    transition:transform .28s var(--ease), border-color .28s var(--ease), box-shadow .28s var(--ease);
+  }
+  .casefile::before{
+    content:"CASE FILE"; position:absolute; top:0; left:20px;
+    transform:translateY(-100%);
+    font-family:var(--font-mono); font-size:9px; letter-spacing:.22em;
+    color:var(--bg); background:var(--amber);
+    padding:5px 12px 4px;
+    clip-path:polygon(0 0,100% 0,100% 100%,10px 100%);
+  }
+  .casefile:hover, .casefile:focus-visible{
+    transform:translateY(-6px);
+    border-color:var(--amber);
+    box-shadow:0 18px 46px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,179,71,0.25);
+  }
+  .casefile[aria-expanded="true"]{ border-color:var(--amber); box-shadow:0 0 0 1px var(--amber); }
+  .cf-no{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--amber);
+  }
+  .cf-title{
+    font-family:var(--font-display); font-weight:700; text-transform:uppercase;
+    font-size:clamp(1.3rem,2.6vw,1.75rem); line-height:1.03; color:var(--ink);
+    letter-spacing:.01em;
+  }
+  .cf-org{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--teal);
+  }
+  .cf-teaser{
+    font-size:13.5px; color:var(--ink-dim); margin:2px 0 0; line-height:1.5;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .cf-open{
+    margin-top:auto; padding-top:14px;
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:8px;
+    transition:color .2s var(--ease), gap .2s var(--ease);
+  }
+  .cf-open::after{ content:"▸"; }
+  .casefile:hover .cf-open, .casefile:focus-visible .cf-open{ color:var(--amber); gap:13px; }
+
+  /* ---------- PROJECT block nested inside an Education role panel ----------
+     Reuses the panel's .rp-block eyebrow ("PROJECT") as the divider, then
+     the diagram, the two-line brief, then the fuller description. The
+     diagrams are dark-themed already — no light frame, just a hairline. */
+  .rp-proj-div{ padding-bottom:2px; }
+  .rp-proj-title{
+    margin:4px 0 0; padding:0 var(--rp-px); max-width:62ch;
+    font-family:var(--font-sans); font-weight:600;
+    font-size:clamp(1.02rem,1.9vw,1.2rem); line-height:1.32; color:var(--ink);
+  }
+  .rp-proj-ctx{
+    margin:8px 0 0; padding:0 var(--rp-px);
+    font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--teal);
+  }
+  .rp-figure{ margin:0; padding:18px var(--rp-px) 0; }
+  .rp-img{
+    display:block; width:100%; max-width:100%; height:auto;
+    border:1px solid var(--line);
+  }
+  .rp-brief{
+    margin:18px var(--rp-px) 2px; padding:0; max-width:74ch;
+    font-size:clamp(15px,1.7vw,17px); line-height:1.55; font-weight:500; color:var(--ink);
+  }
+
+  /* ---------- CERTIFICATIONS ---------- */
+  .certs-sec{ border-top:1px solid var(--line); }
+  .certs{ list-style:none; margin:0; padding:0; display:grid; gap:1px; background:var(--line); border:1px solid var(--line); }
+  .cert{ background:var(--panel); padding:16px 18px; display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; }
+  .cert .c-name{ font-weight:600; color:var(--ink); font-size:14.5px; }
+  .cert .c-body{ font-family:var(--font-mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); }
+  .cert .c-yr{ margin-left:auto; font-family:var(--font-mono); font-size:11px; color:var(--amber); }
+
+  /* ---------- LEADERSHIP ---------- */
+  .lead-sec{ border-top:1px solid var(--line); background:linear-gradient(180deg,transparent,rgba(9,14,16,0.4)); }
+  .cmd-log{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line); }
+  .cmd-row{ background:var(--panel); padding:16px 18px; display:flex; gap:16px; }
+  .cmd-row .c-verb{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--teal); flex:none; width:52px; padding-top:3px;
+  }
+  .cmd-row .c-txt{ color:var(--ink-dim); font-size:13.5px; line-height:1.55; }
+  .cmd-row .c-where{ display:block; font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); margin-top:5px; }
+
+  /* ---------- CONTACT section ---------- */
+  .contact-sec{ border-top:1px solid var(--line); }
+  .contact-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:1px; background:var(--line); border:1px solid var(--line); }
+  .contact-row{
+    background:var(--panel); padding:18px; display:flex; flex-direction:column; gap:7px;
+    text-decoration:none; color:var(--ink); min-height:44px;
+    transition:background .18s var(--ease), color .18s var(--ease);
+  }
+  a.contact-row:hover, a.contact-row:focus-visible{ background:var(--panel-2); color:var(--teal); }
+  .contact-row .k{ font-family:var(--font-mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); }
+  .contact-row .v{ font-family:var(--font-mono); font-size:13px; word-break:break-word; }
+  .contact-cta{
+    margin-top:22px; appearance:none; cursor:pointer;
+    background:var(--amber); color:var(--bg); border:0;
+    padding:15px 24px; min-height:44px;
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    clip-path:polygon(0 0,100% 0,100% 100%,12px 100%,0 calc(100% - 12px));
+    transition:transform .2s var(--ease), background .2s var(--ease);
+  }
+  .contact-cta:hover, .contact-cta:focus-visible{ transform:translateY(-2px); background:#ffc46b; }
+
+  /* ---------- CERTIFICATIONS — clickable cards + certificate lightbox ---------- */
+  button.cert{
+    appearance:none; width:100%; margin:0; border:0; cursor:pointer;
+    font:inherit; color:inherit; text-align:left;
+    background:var(--panel);
+    transition:background .18s var(--ease), color .18s var(--ease);
+  }
+  button.cert:hover, button.cert:focus-visible{ background:var(--panel-2); }
+  button.cert:focus-visible{ outline:2px solid var(--teal); outline-offset:-2px; }
+  .cert .c-open{
+    flex:0 0 100%; margin-top:8px;
+    font-family:var(--font-mono); font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-faint);
+    transition:color .18s var(--ease);
+  }
+  button.cert:hover .c-open, button.cert:focus-visible .c-open{ color:var(--teal); }
+
+  .cert-modal{
+    --cert-px: clamp(22px, 3.2vw, 42px);
+    width:min(1180px, 75vw);
+    max-height:min(900px, 75vh); overflow-y:auto;
+    display:flex; flex-direction:column;
+    background:linear-gradient(170deg,var(--panel-2),var(--panel));
+    border:1px solid var(--teal);
+    box-shadow:0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(47,227,196,0.14);
+    animation:pop .28s var(--ease);
+  }
+  /* slim sticky bar — holds only the close control; the image is the first content */
+  .cert-modal-bar{
+    position:sticky; top:0; z-index:3;
+    display:flex; justify-content:flex-end;
+    padding:12px 12px 8px;
+    background:var(--panel-2);   /* solid, not backdrop-filter (see .rp-hd) */
+  }
+  .cert-modal-body{ padding:0 var(--cert-px) 30px; }
+
+  /* 1 · certificate image */
+  .cert-shot{
+    margin:0; padding:0; min-height:120px;
+    border:1px solid var(--line-2); background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cert-img{
+    display:block; width:100%; height:auto;
+    max-height:min(62vh,660px); object-fit:contain;
+  }
+  .cert-img-missing{
+    padding:34px 20px; text-align:center; line-height:1.8;
+    font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .cert-img-missing span{ color:var(--amber); letter-spacing:.04em; text-transform:none; }
+
+  /* 2 · title + issuer/year heading line */
+  .cert-head{ margin-top:20px; }
+  .cert-modal-tag{
+    display:block; margin-bottom:8px;
+    font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--teal);
+  }
+  .cert-head h3{
+    font-family:var(--font-display); font-weight:700; text-transform:uppercase;
+    font-size:clamp(1.3rem,3vw,1.7rem); line-height:1.05; color:var(--ink);
+  }
+  .cert-modal-meta{
+    display:block; margin-top:8px;
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint);
+  }
+
+  /* 3 · description — body copy, held to a readable measure (cf. .summary) */
+  .cert-copy{ margin-top:16px; }
+  .cert-desc{
+    margin:0; max-width:68ch;
+    color:var(--ink-dim);
+    font-size:clamp(15px,1.5vw,16.5px); line-height:1.68;
+  }
+
+  /* 4 · closing action */
+  .cert-modal-foot{
+    margin-top:22px; padding-top:18px;
+    border-top:1px solid var(--line);
+  }
+  .cert-linkedin{
+    display:inline-flex; align-items:center; gap:8px;
+    text-decoration:none; background:var(--teal); color:#02110e;
+    padding:12px 20px; min-height:44px;
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    clip-path:polygon(0 0,100% 0,100% 100%,12px 100%,0 calc(100% - 12px));
+    transition:transform .2s var(--ease), background .2s var(--ease);
+  }
+  .cert-linkedin:hover, .cert-linkedin:focus-visible{ transform:translateY(-2px); background:#5ff0d8; }
+
+  @media (max-width:620px){
+    .cert-modal{ --cert-px:18px; width:100%; max-height:90vh; }
+    .cert-desc{ font-size:14.5px; }
+  }
+
+  /* ---------- perf: will-change is never left on idle elements ----------
+     The skill nodes no longer drift (the per-frame rAF loop was removed),
+     so they carry no will-change at all. .role-panel / .badge are promoted
+     by JS only for the duration of their open animation, then released. */
+
+  /* ---------- touch targets ≥ 44×44 ---------- */
+  @media (pointer:coarse){
+    .node{ min-height:44px; padding-top:12px; padding-bottom:12px; }
+    .icon-btn{ width:44px; height:44px; }
+    .foot button, .badge-ft button, .name-hint{ min-height:44px; }
+    .badge-rows a, .badge-rows span.val{ min-height:44px; }
+  }
+
+  /* ---------- responsive ---------- */
+  /* mid viewports & down — scale the scene back, stack the filmstrip */
+  @media (max-width:780px){
+    .scanlines{ display:none; }
+    .casefiles{
+      flex-direction:column; overflow:visible;
+      scroll-snap-type:none; gap:16px; padding:16px 0 4px;
+    }
+    .casefile{ flex:1 1 auto; width:100%; }
+    .cf-hint{ display:none; }
+  }
+
+  @media (max-width:900px){
+    .status-strip{ grid-template-columns:repeat(2,1fr); }
+    .timeline{ flex-direction:column; gap:22px; padding:12px 0 8px; }
+    .timeline::before{ left:9px; right:auto; top:10px; bottom:10px; width:2px; height:auto; }
+    .timeline li{ padding:0 0 0 40px; }
+    .tl-marker{ padding-top:0; }
+    .tl-year{ position:static; margin-bottom:8px; }
+    .tl-dot{ left:-32px; top:4px; }
+    .tl-body{ margin-top:0; }
+    .tl-title{ letter-spacing:.04em; }
+    .tl-body::after{ opacity:1; transform:none; }
+  }
+  @media (max-width:620px){
+    /* panels expand to near-full-screen sheets on narrow viewports */
+    .overlay{ padding:0; align-items:flex-end; }
+    .badge-scene{ width:100%; }
+    .badge{ min-height:0; transform:none !important; transition:none; }
+    .badge-face{ position:relative; }
+    .badge.flipped .badge-front{ display:none; }
+    .badge:not(.flipped) .badge-back{ display:none; }
+    .badge-back{ transform:none; }
+    .role-panel{ width:100%; max-height:90vh; --rp-px:18px; }
+  }
+  @media (max-width:600px){
+    .status-strip{ grid-template-columns:1fr; }
+    .topbar{ font-size:11px; gap:10px 14px; padding:14px 18px; }
+    .coord{ display:none; }
+    .wordmark{ letter-spacing:.2em; }
+    .clock{ margin-left:auto; }
+
+    .kicker{ letter-spacing:.1em; font-size:10px; }
+    .role{ letter-spacing:.1em; }
+    .sec-h{ letter-spacing:.12em; flex-wrap:wrap; font-size:11px; }
+    .sec-sub{ letter-spacing:.04em; }
+    .summary{ font-size:15px; }
+    .availability{ letter-spacing:.06em; font-size:10.5px; }
+    .stat-lbl{ letter-spacing:.05em; }
+
+    .tl-title{ letter-spacing:.02em; }
+    .tl-loc{ letter-spacing:.02em; }
+    .tl-co,.rp-co{ overflow-wrap:anywhere; }
+    .rp-title{ letter-spacing:.02em; overflow-wrap:anywhere; }
+
+    .foot{ letter-spacing:.05em; gap:12px; }
+    .legend{ letter-spacing:.05em; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
+    .name-hint{ opacity:1; }
+    .availability .dot{ animation:none; }
+    /* continuous background motion is fully stopped, not just slowed:
+       the JS bg loop renders a single frame (see REDUCED in script),
+       and these CSS drifts are pinned to their resting position. */
+    .spacefact{ animation:none !important; transform:none !important; }
+    .constellation #links{ animation:none !important; }
+  }
+
+  /* no-JS: show fallback list */
+  .no-js .node-fallback{ display:flex; flex-wrap:wrap; gap:8px; padding:20px; }
+  .no-js .node-fallback li{ list-style:none; font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); border:1px solid var(--line-2); padding:6px 10px; }
+  .no-js #links{ display:none; }
+  .no-js .constellation{ height:auto; min-height:0; }
+</style>
+</head>
+<body class="no-js">
+<a class="skip" href="#main">Skip to content</a>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="spacefacts" id="spacefacts" role="group" aria-label="Ambient space facts"></div>
+<div class="planet-hits" id="planetHits" role="group" aria-label="Solar system planets"></div>
+<div id="eggfade" aria-hidden="true"></div>
+<!-- Egg callout kept OUTSIDE #invertwrap so it stays legible (uninverted) -->
+<div class="egg-popup" id="eggPopup" role="status" hidden>
+  <div class="egg-popup-hd">
+    <span class="egg-popup-label">◦ Alert</span>
+    <button type="button" class="icon-btn" id="eggPopupClose" aria-label="Hide message">✕</button>
+  </div>
+  <p class="egg-popup-text">SYSTEM COLLAPSE — reload the page to restore the solar system.</p>
+</div>
+
+<!-- ambient audio: no visual, gated entirely by the sound toggle, nothing autoplays.
+     TODO(verify mapping): the two source files were staged as "1.mp3" and "2.mp3" —
+     no "ambient/bg/background/music" or "blast/explosion/boom/black-hole" keyword in
+     either name, so they were matched by SIZE, not filename:
+       1.mp3 (~15.6 MB, full-length track) -> ambient-background.mp3  (background loop)
+       2.mp3 (~0.12 MB, short clip)        -> blackhole-collapse.mp3  (blast / black-hole loop)
+     If that's backwards, just swap the two src filenames below (or the two copied files). -->
+<audio id="bgAudio" src="ambient-background.mp3" loop preload="none"></audio>
+<audio id="bhAudio" src="blackhole-collapse.mp3" loop preload="none"></audio>
+
+<!-- everything that receives the negative-colour-grading filter lives inside #invertwrap
+     (the fixed canvas #bg stays outside so it isn't trapped by the filter's containing block) -->
+<div id="invertwrap">
+<!-- Sun tap-counter lives in the page's own flow (see .sun-counter) so it scrolls
+     away with the content and can't overlay other sections -->
+<div class="sun-counter mono" id="sunCounter" hidden>0 <b>/ 100</b></div>
+<header class="topbar">
+  <span class="wordmark">CONTROL TOWER</span>
+  <span class="sep"></span>
+  <span class="coord">12.9716&deg;N &middot; 77.5946&deg;E</span>
+  <span class="clock" id="clock">--:--:-- IST</span>
+  <button type="button" class="sound-toggle" id="soundToggle" aria-pressed="false" aria-label="Sound">
+    <span class="st-dot" aria-hidden="true"></span><span class="st-txt">Sound Off</span>
+  </button>
+</header>
+
+<main id="main">
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" aria-labelledby="who">
+    <p class="kicker mono">// OPERATOR PROFILE — SECTOR 07 — CLEARANCE GRANTED</p>
+    <h1 id="who">
+      <button class="name-btn" id="nameBtn" aria-haspopup="dialog" aria-controls="contactOverlay">
+        <span class="name-line">Chintan</span>
+        <span class="name-line">Dhamecha</span>
+        <span class="name-hint mono" aria-hidden="true">open credentials</span>
+      </button>
+    </h1>
+    <p class="role mono">Digital Transformation <span>&amp;</span> Operations</p>
+    <p class="summary">4.5+ years leading end-to-end procurement, SAP&nbsp;PLM/DMS and business operations across India, Germany, the Netherlands and China.</p>
+
+    <ul class="status-strip" aria-label="Headline metrics">
+      <li><span class="stat-val" data-count="93" data-suffix="%">0<span class="u">%</span></span><span class="stat-lbl">Procurement request<br>turnaround cut</span></li>
+      <li><span class="stat-val" data-count="95" data-suffix="%">0<span class="u">%</span></span><span class="stat-lbl">SAP DMS adoption<br>across 500+ dealers</span></li>
+      <li><span class="stat-val" data-count="98" data-suffix="%">0<span class="u">%</span></span><span class="stat-lbl">System uptime<br>across dealer network</span></li>
+      <li><span class="stat-val" data-count="4.5" data-suffix="+ YRS" data-decimals="1">0<span class="u">+ yrs</span></span><span class="stat-lbl">Leading cross-border<br>ops &amp; transformation</span></li>
+    </ul>
+
+    <p class="availability mono"><span class="dot" aria-hidden="true"></span> Status — open to Digital Transformation, Procurement Ops &amp; Business Ops leadership roles</p>
+    <p class="flare-hint mono" id="flareHint" aria-hidden="true">◎ click the light — flare the corona · scroll to pull back to the system</p>
+  </section>
+
+  <!-- ========== EXPERIENCE ========== -->
+  <section class="timeline-sec" id="experience" aria-labelledby="tl-h">
+    <h2 id="tl-h" class="sec-h">◦ Flight Log — Deployment History</h2>
+    <p class="sec-sub">Three deployments · select a marker to pull the log entry</p>
+    <ol class="timeline" id="timeline" role="list"></ol>
+  </section>
+
+  <!-- ========== PROJECTS (standalone case files) ========== -->
+  <section class="casefiles-sec" id="projects" aria-labelledby="pj-h">
+    <h2 id="pj-h" class="sec-h">◦ Case Files — Project Dossiers</h2>
+    <p class="sec-sub">Four professional projects · open a file for context, approach and outcome</p>
+    <p class="cf-hint" aria-hidden="true">scroll the strip · files 01–04</p>
+    <div class="casefiles" id="casefiles" role="region"
+         aria-label="Project case files — horizontally scrollable, use arrow keys" tabindex="0"></div>
+  </section>
+
+  <!-- ========== EDUCATION (degree + its nested project, one panel each) ========== -->
+  <section class="timeline-sec" id="education" aria-labelledby="edu-h">
+    <h2 id="edu-h" class="sec-h">◦ Academic Record — Degrees</h2>
+    <p class="sec-sub">Two colleges · select one for the degree and its project</p>
+    <ol class="timeline timeline--edu" id="eduline" role="list"></ol>
+  </section>
+
+  <!-- ========== CERTIFICATIONS ========== -->
+  <section class="certs-sec" id="certifications" aria-labelledby="ct-h">
+    <h2 id="ct-h" class="sec-h">◦ Certifications — Credentials On File</h2>
+    <p class="sec-sub">Five credentials · select one for the certificate</p>
+    <ul class="certs" id="certs"></ul>
+  </section>
+
+  <!-- ========== SKILLS ========== -->
+  <section class="skills-sec" id="skills" aria-labelledby="sk-h">
+    <h2 id="sk-h" class="sec-h">◦ Capability Constellation</h2>
+    <p class="sec-sub">22 tracked competencies · select a node for the readout</p>
+    <div class="constellation" id="constellation">
+      <canvas id="links" aria-hidden="true"></canvas>
+      <ul class="node-fallback" id="nodeFallback" aria-hidden="true"></ul>
+    </div>
+    <p class="legend mono">▮ teal — technical &nbsp;·&nbsp; ▮ amber — core competency &nbsp;·&nbsp; ▯ dashed — soft skill</p>
+  </section>
+
+  <!-- ========== LEADERSHIP ========== -->
+  <section class="lead-sec" id="leadership" aria-labelledby="ld-h">
+    <h2 id="ld-h" class="sec-h">◦ Command Record — Leadership</h2>
+    <p class="sec-sub">Where the work was led, drawn from the record</p>
+    <ul class="cmd-log">
+      <li class="cmd-row"><span class="c-verb">Led</span><span class="c-txt">End-to-end procurement, SAP&nbsp;PLM/DMS and business operations across India, Germany, the Netherlands and China.<span class="c-where">Cross-border · 4.5+ years</span></span></li>
+      <li class="cmd-row"><span class="c-verb">Led</span><span class="c-txt">UAT cycles across multiple SAP modules; coordinated with PMO as the connective layer to the technical delivery team.<span class="c-where">Daimler India Commercial Vehicles</span></span></li>
+      <li class="cmd-row"><span class="c-verb">Owned</span><span class="c-txt">Onboarding, issue resolution and performance monitoring for a 500+ dealer network across Parts, Service, Warranty and Sales.<span class="c-where">Daimler India Commercial Vehicles</span></span></li>
+      <li class="cmd-row"><span class="c-verb">Led</span><span class="c-txt">Continuous service-improvement initiatives on a global enterprise account.<span class="c-where">Unisys</span></span></li>
+      <li class="cmd-row"><span class="c-verb">Cert</span><span class="c-txt">Leadership and Management.<span class="c-where">Great Learning · 2025</span></span></li>
+    </ul>
+  </section>
+
+  <!-- ========== CONTACT ========== -->
+  <section class="contact-sec" id="contact" aria-labelledby="cn-h">
+    <h2 id="cn-h" class="sec-h">◦ Contact — Open Channel</h2>
+    <p class="sec-sub">Direct lines</p>
+    <div class="contact-grid">
+      <a class="contact-row" href="mailto:chintandhamecha12@gmail.com"><span class="k">Email</span><span class="v">chintandhamecha12@gmail.com</span></a>
+      <a class="contact-row" href="tel:+919740879182"><span class="k">Phone</span><span class="v">+91 97408 79182</span></a>
+      <a class="contact-row" href="https://www.linkedin.com/in/chintan-dhamecha/" target="_blank" rel="noopener noreferrer"><span class="k">LinkedIn</span><span class="v">in/chintan-dhamecha ↗</span></a>
+      <span class="contact-row"><span class="k">Location</span><span class="v">Bangalore, Karnataka, India</span></span>
+    </div>
+    <button type="button" class="contact-cta" id="ctaBadge" aria-haspopup="dialog" aria-controls="contactOverlay">Open ID badge ▸</button>
+  </section>
+
+</main>
+
+<footer class="foot mono">
+  <span>Chintan Dhamecha · Bangalore, KA, IND · Signal nominal</span>
+  <button id="footContact" aria-haspopup="dialog" aria-controls="contactOverlay">Open comms ▸</button>
+</footer>
+</div><!-- /#invertwrap -->
+
+<!-- ========== CONTACT / ID BADGE MODAL ========== -->
+<div class="overlay" id="contactOverlay" hidden>
+  <div class="badge-scene">
+    <div class="badge" id="badge" role="dialog" aria-modal="true" aria-labelledby="badgeName" aria-describedby="badgeRole">
+      <!-- FRONT -->
+      <div class="badge-face badge-front">
+        <div class="badge-lanyard" aria-hidden="true"></div>
+        <div class="badge-hd">
+          <span>ID // CD-07</span>
+          <span class="lvl">Clearance A</span>
+        </div>
+        <div class="badge-photo" aria-hidden="true">CD</div>
+        <div class="badge-name" id="badgeName">Chintan Dhamecha</div>
+        <div class="badge-role mono" id="badgeRole">Digital Transformation &amp; Operations</div>
+        <ul class="badge-rows">
+          <li><a href="mailto:chintandhamecha12@gmail.com"><span class="k">Email</span><span>chintandhamecha12@gmail.com</span></a></li>
+          <li><a href="tel:+919740879182"><span class="k">Phone</span><span>+91 97408 79182</span></a></li>
+          <li><a href="https://www.linkedin.com/in/chintan-dhamecha/" target="_blank" rel="noopener noreferrer"><span class="k">LinkedIn</span><span>in/chintan-dhamecha ↗</span></a></li>
+          <li><span class="val"><span class="k">Location</span><span>Bangalore, Karnataka, India</span></span></li>
+        </ul>
+        <div class="badge-barcode" aria-hidden="true"></div>
+        <div class="badge-ft">
+          <button type="button" id="flipToBack">Record ▸</button>
+          <button type="button" class="close-modal" data-close>Dismiss ✕</button>
+        </div>
+      </div>
+      <!-- BACK -->
+      <div class="badge-face badge-back">
+        <div class="badge-lanyard" aria-hidden="true"></div>
+        <div class="badge-hd">
+          <span>Personnel Record</span>
+          <span class="lvl">CD-07</span>
+        </div>
+        <div class="badge-sec">
+          <h3>Education</h3>
+          <ul>
+            <li><b>MBA — Operations</b>, Alliance University · 2021–2023<br>Operations Strategy · Supply Chain · People Management</li>
+            <li><b>B.E. Electrical &amp; Electronic Engineering</b>, New Horizon College of Engineering · 2015–2019</li>
+          </ul>
+        </div>
+        <div class="badge-sec">
+          <h3>Certifications</h3>
+          <ul>
+            <li><b>Leadership &amp; Management</b> — Great Learning, 2025</li>
+            <li><b>Agile Project Management</b> — Google, 2026</li>
+            <li><b>AI Fundamentals</b> — IBM, 2026</li>
+            <li><b>GEN AI 101</b> — nasscom, 2025</li>
+            <li><b>SAP S/4HANA Training</b> — Udemy, 2025</li>
+          </ul>
+        </div>
+        <div class="badge-ft">
+          <button type="button" id="flipToFront">◂ Back to ID</button>
+          <button type="button" class="close-modal" data-close>Dismiss ✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ROLE DETAIL PANEL ========== -->
+<div class="overlay panel-overlay" id="roleOverlay" hidden>
+  <aside class="role-panel" id="rolePanel" role="dialog" aria-modal="true" aria-labelledby="rpCo">
+    <div class="rp-hd">
+      <div>
+        <span class="rp-tag mono" id="rpTag">Log entry</span>
+        <span class="rp-co" id="rpCo">—</span>
+        <span class="rp-title mono" id="rpTitle">—</span>
+      </div>
+      <button type="button" class="icon-btn close-modal" data-close aria-label="Close log entry">✕</button>
+    </div>
+    <div class="rp-meta" id="rpMeta"></div>
+    <div id="rpBody"></div>
+  </aside>
+</div>
+
+<!-- ========== CERTIFICATE LIGHTBOX ========== -->
+<div class="overlay" id="certOverlay" hidden>
+  <div class="cert-modal" id="certModal" role="dialog" aria-modal="true" aria-labelledby="certModalName">
+    <div class="cert-modal-bar">
+      <button type="button" class="icon-btn close-modal" data-close aria-label="Close certificate">✕</button>
+    </div>
+    <div class="cert-modal-body">
+      <figure class="cert-shot" id="certShot"></figure>
+      <div class="cert-head">
+        <span class="cert-modal-tag mono" id="certModalTag">Credential on file</span>
+        <h3 id="certModalName">—</h3>
+        <span class="cert-modal-meta mono" id="certModalMeta">—</span>
+      </div>
+      <div class="cert-copy">
+        <p class="cert-desc" id="certModalDesc">—</p>
+      </div>
+      <div class="cert-modal-foot">
+        <a class="cert-linkedin mono" id="certLinkedin" href="https://www.linkedin.com/in/chintan-dhamecha/details/certifications/" target="_blank" rel="noopener">View on LinkedIn ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SKILL READOUT POPOVER ========== -->
+<div class="readout" id="readout" role="dialog" aria-label="Skill readout" hidden>
+  <div class="readout-hd">
+    <div>
+      <span class="readout-cat mono" id="roCat">Technical</span>
+      <h3 id="roName">—</h3>
+    </div>
+    <button type="button" class="icon-btn" id="roClose" aria-label="Close readout">✕</button>
+  </div>
+  <div class="readout-body">
+    <div class="gauge">
+      <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
+        <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(120,170,175,0.18)" stroke-width="6"></circle>
+        <circle id="roArc" cx="36" cy="36" r="30" fill="none" stroke="var(--teal)" stroke-width="6"
+                stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"
+                transform="rotate(-90 36 36)"></circle>
+      </svg>
+      <div>
+        <div class="gauge-num"><span id="roScore">0</span><small>/10</small></div>
+        <div class="gauge-cap mono">Proficiency</div>
+      </div>
+    </div>
+    <p class="readout-origin" id="roOrigin">—</p>
+  </div>
+</div>
+
+<!-- ========== LIGHTWEIGHT FACT POPOVER (space facts + planet facts) ========== -->
+<div class="factpop" id="factpop" role="dialog" aria-label="Fact" hidden>
+  <div class="factpop-hd">
+    <span class="factpop-label mono" id="factpopLabel">—</span>
+    <button type="button" class="icon-btn" id="factpopClose" aria-label="Close fact">✕</button>
+  </div>
+  <p class="factpop-text" id="factpopText">—</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var docEl = document.documentElement;
+  document.body.classList.remove("no-js");
+  var REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var SMALL = function(){ return window.innerWidth <= 620; };
+  var MID   = function(){ return window.innerWidth <= 780; };  // scale the scene back at/under this
+
+  /* ============================================================
+     DATA
+     ============================================================ */
+  var EXPERIENCE = [
+    {
+      year: "JUN — AUG 2026",
+      co: "eternal.ag",
+      title: "Senior Specialist, Procurement & Operations",
+      meta: ["Jun 2026 – Aug 2026 · concluded", "Bangalore, KA, IND"],
+      blocks: [{
+        h: "Project(s) run",
+        body: "Procurement & Operations Transformation — built a cross-country procurement framework end-to-end across India, Germany and China: sourcing, RFQs, POs, supplier coordination, order fulfillment, invoicing and delivery. Standardized and automated procurement documentation (RFQs, POs, receipts, NDAs, service agreements) in Excel. Built a part-to-invoice-to-bot traceability framework integrating Finance, Procurement and PLM data. Digitized procurement request management via Asana + Microsoft Teams. Also stood up cross-border logistics and customs operations across India, Germany, China and the Netherlands (DHL / Blue Dart)."
+      }],
+      metric: "Cut procurement request turnaround 93% (30–40 min → 2–3 min); cut shipment turnaround from 2–3 weeks to 3–5 days.",
+      metricCap: "Movement on record",
+      list: { h: "Skills developed in this phase", items: ["Asana","Excel Automation","Workflow Automation","Procurement Systems","Business Process Design","Ownership & Accountability","Decision-Making","Business Process Automation","Procurement & Supply Chain Operations","End-to-End Operations","Vendor & Supplier Management","Process Optimization"] }
+    },
+    {
+      year: "SEP 2023 — MAY 2026",
+      co: "Daimler India Commercial Vehicles",
+      title: "Senior Manager, IT Operations",
+      meta: ["Sep 2023 – May 2026", "Chennai, TN, IND"],
+      blocks: [{
+        h: "Project(s) run",
+        body: "SAP DMS transformation for a 500+ dealer network (client: Mitsubishi Fuso Truck and Bus Corporation) — served as SAP PLM Functional Consultant scheduling high-volume batch jobs; digitized PO validation workflows via Microsoft Teams e-signatures; wrote Functional Specification Documents and coordinated with PMO; led UAT cycles across multiple SAP modules; owned onboarding, issue resolution and performance monitoring for the dealer network across Parts, Service, Warranty and Sales; built Power BI dashboards for dealer KPIs, claim aging, service SLAs and warranty analytics."
+      }],
+      metric: "95% platform adoption and 98% uptime across 500+ dealers; ~35% faster PO processing time; 99%+ batch-job execution reliability; >95% SLA compliance.",
+      metricCap: "Movement on record",
+      list: { h: "Skills developed in this phase", items: ["SAP PLM/MM/DMS","Microsoft Teams","Power BI","Stakeholder Management","Cross-functional Collaboration","Communication","Digital Transformation","UAT & System Rollouts","Operational Analytics"] }
+    },
+    {
+      year: "AUG 2019 — MAY 2021",
+      co: "Unisys India",
+      title: "Service Support Representative",
+      meta: ["Aug 2019 – May 2021", "Bangalore, KA, IND"],
+      blocks: [{
+        h: "Project(s) run",
+        body: "IT Service Excellence — monitored service performance for a global enterprise client, ran incident trend analysis and root-cause analysis (RCA) on recurring issues, and led continuous service-improvement initiatives."
+      }],
+      metric: "Sustained 97%+ SLA compliance; lifted workflow efficiency ~30% through RCA-driven fixes.",
+      metricCap: "Movement on record",
+      list: { h: "Skills developed in this phase", items: ["Problem-Solving","foundational Process Optimization","Operational Analytics (KPI tracking)"] }
+    }
+  ];
+
+  /* PROJECTS (professional) — case files. co = project title, title = org line. */
+  var PROJECTS = [
+    {
+      co: "Procurement & Operations Transformation",
+      org: "eternal.ag",
+      title: "eternal.ag",
+      meta: ["India · Germany · China", "Cross-border framework"],
+      teaser: "Cross-border procurement spanning India, Germany and China needed one common framework instead of ad hoc, market-by-market processes.",
+      blocks: [
+        { h: "Context", body: "Cross-border procurement spanning India, Germany and China needed one common framework instead of ad hoc, market-by-market processes." },
+        { h: "Approach", body: "Built the framework end-to-end — from requirements gathering through documentation standardization (RFQs, POs, receipts, NDAs, service agreements) to a cross-team rollout — and layered in a part-to-invoice-to-bot traceability system connecting Finance, Procurement and PLM data." }
+      ],
+      metric: "Procurement request turnaround cut 93% (30–40 min to 2–3 min); cross-border shipment turnaround cut from 2–3 weeks to 3–5 days.",
+      metricH: "Outcome", metricCap: "Outcome", list: null
+    },
+    {
+      co: "SAP DMS Enhancement Roadmap",
+      org: "Daimler India Commercial Vehicles",
+      title: "Daimler India Commercial Vehicles",
+      meta: ["Client: Mitsubishi Fuso Truck and Bus Corporation"],
+      teaser: "A global client engagement needed a clear, accountable path from business requirement to shipped SAP PLM enhancement.",
+      blocks: [
+        { h: "Context", body: "A global client engagement needed a clear, accountable path from business requirement to shipped SAP PLM enhancement." },
+        { h: "Approach", body: "Owned the roadmap end to end — writing Functional Specification Documents, running UAT scheduling, and estimating timelines — as the connective layer between PMO and the technical delivery team." }
+      ],
+      metric: "Enhancements shipped with minimal post-deployment issues; batch-job execution reliability held above 99%.",
+      metricH: "Outcome", metricCap: "Outcome", list: null
+    },
+    {
+      co: "SAP DMS Dealer Network Rollout",
+      org: "Daimler India Commercial Vehicles",
+      title: "Daimler India Commercial Vehicles",
+      meta: ["500+ dealer network", "Phased go-live"],
+      teaser: "A 500+ dealer network needed to move onto a new Dealer Management System without disrupting day-to-day operations.",
+      blocks: [
+        { h: "Context", body: "A 500+ dealer network needed to move onto a new Dealer Management System without disrupting day-to-day operations." },
+        { h: "Approach", body: "Sequenced the phased rollout — UAT, stakeholder training, go-live — dealer by dealer, resolving onboarding issues and monitoring performance across Parts, Service, Warranty and Sales." }
+      ],
+      metric: "95% platform adoption and 98% uptime sustained across the full dealer network.",
+      metricH: "Outcome", metricCap: "Outcome", list: null
+    },
+    {
+      co: "IT Service Excellence",
+      org: "Unisys",
+      title: "Unisys",
+      meta: ["Global enterprise account", "Continuous improvement"],
+      teaser: "Recurring incidents on a global enterprise account were eating into service reliability.",
+      blocks: [
+        { h: "Context", body: "Recurring incidents on a global enterprise account were eating into service reliability." },
+        { h: "Approach", body: "Ran a continuous service-improvement initiative end-to-end — incident trend analysis, root-cause investigation, corrective-action rollout, preventive monitoring." }
+      ],
+      metric: "Workflow efficiency lifted ~30%; SLA compliance sustained above 97%.",
+      metricH: "Outcome", metricCap: "Outcome", list: null
+    }
+  ];
+
+  /* One interactive entry per college. The academic project now lives INSIDE
+     its college's panel (it.project), rendered after the degree info under a
+     "PROJECT" divider: divider → diagram → two-line brief → fuller description. */
+  var EDU = [
+    {
+      year: "2021 — 2023",
+      co: "Alliance University",
+      title: "Master of Business Administration — Operations",
+      meta: ["2021 – 2023", "Postgraduate"],
+      blocks: [{ h: "Focus areas", body: "Operations Strategy · Supply Chain Management · People Management." }],
+      metric: null, list: null,
+      project: {
+        title: "MBA Dissertation — Optimization of Construction Project Scheduling and Resource Allocation for Improved Productivity",
+        context: "Alliance University, MBA - Operations Management, Semester IV · Guided by Prof. Shalini Kumari",
+        img: "mba_project_diagram.png", w: 2640, h: 1220,
+        imgAlt: "Diagram of the MBA dissertation project — problem, approach and impact",
+        brief: "Reviews optimization techniques used in construction project scheduling — genetic algorithms, mathematical programming and simulation — and proposes an integrated framework to cut delays, control cost, and lift resource utilization.",
+        body: "Dissertation examining how construction firms can optimize project scheduling and resource allocation to lift productivity — reviewing optimization techniques used in construction project management (genetic algorithms, mathematical programming, simulation-based models), identifying gaps in integrated, risk-aware and real-time approaches, and proposing objectives for a framework to close them."
+      }
+    },
+    {
+      year: "2015 — 2019",
+      co: "New Horizon College of Engineering",
+      title: "B.E. — Electrical and Electronic Engineering",
+      meta: ["2015 – 2019", "Undergraduate"],
+      blocks: [{ h: "Field", body: "Electrical and Electronic Engineering." }],
+      metric: null, list: null,
+      project: {
+        title: "Final Year Project — Self-Balanced Step-Up Multilevel Inverter (Switched-Capacitor Structure)",
+        context: "New Horizon College of Engineering, EEE · 2018–19",
+        img: "bachelors_project_diagram.png", w: 2640, h: 1280,
+        imgAlt: "Diagram of the switched-capacitor multilevel inverter — topology and nine-level output waveform",
+        brief: "Designed and hardware-tested a single-phase nine-level switched-capacitor inverter that steps up a medium-voltage source without inductors, producing a bipolar 9-level staircase output verified in both simulation and a physical build.",
+        body: "Designed, simulated and hardware-tested a single-phase nine-level switched-capacitor multilevel inverter that steps up a medium-voltage source (batteries, supercapacitors, solar panels) to high output power without inductors — from literature review and circuit design through simulation to a working physical build, as part of a three-member capstone team."
+      }
+    }
+  ];
+
+  /* ============================================================
+     CERTIFICATIONS
+     ------------------------------------------------------------
+     Certificate images live in assets/certs/ (copied from the
+     originals the owner staged in .local/bin/). Each `img` path
+     below is matched to its cert by filename; if a file is missing
+     the modal falls back to a "not on file" placeholder.
+
+     `desc` strings are the owner's final copy, used verbatim. The
+     AI Fundamentals entry was drafted in-house (no official course
+     description was available) and is likewise kept as written.
+     ============================================================ */
+  var CERTS = [
+    {
+      name: "Leadership and Management",
+      issuer: "Great Learning",
+      year: "2025",
+      img: "assets/certs/leadership-management-great-learning.jpg",
+      desc: "Gained knowledge in leadership theories, leadership styles, and management principles, with practical insights into motivating teams, decision-making, and effective people management."
+    },
+    {
+      // Renamed from "Foundations of Project Management" per the brief; the matched
+      // file (agile-project-management-google.jpg) confirms both the new title and
+      // the Google issuer, so issuer/year are unchanged.
+      name: "Agile Project Management",
+      issuer: "Google",
+      year: "2026",
+      img: "assets/certs/agile-project-management-google.jpg",
+      desc: "Completed training in Agile Project Management and Scrum, gaining a practical understanding of Agile values, principles, and project management practices. Developed knowledge of the Scrum framework, including its pillars, values, and key events, and learned how to effectively facilitate Scrum ceremonies. Also gained an understanding of coaching Agile teams, improving collaboration, resolving challenges, and supporting teams in continuously improving their delivery and performance."
+    },
+    {
+      name: "AI Fundamentals: Foundations for Understanding AI",
+      issuer: "IBM",
+      year: "2026",
+      img: "assets/certs/ai-fundamentals-ibm.png",
+      desc: "Completed IBM's AI Fundamentals course, building a foundational understanding of artificial intelligence — including core concepts like machine learning and deep learning, how AI systems are trained and applied, and where they're used across industries. Also covered responsible and ethical considerations in deploying AI, alongside practical examples of AI-driven business applications."
+    },
+    {
+      name: "GEN AI 101",
+      issuer: "nasscom",
+      year: "2025",
+      img: "assets/certs/gen-ai-101-nasscom.jpg",
+      desc: "Successfully completed the Generative AI 101 certification issued by NASSCOM, gaining foundational knowledge in Generative Artificial Intelligence, large language models, prompt engineering, and real-world AI applications. The program covered key concepts of modern AI technologies, responsible AI usage, and emerging industry use cases."
+    },
+    {
+      name: "SAP S/4HANA Training",
+      issuer: "Udemy",
+      year: "2025",
+      img: "assets/certs/sap-s4hana-udemy.jpg",
+      desc: "Completed a training course on SAP S/4HANA, gaining a clear understanding of its core concepts, architecture, and future direction. The course helped build an understanding of how S/4HANA's design addresses key limitations of traditional ERP systems like SAP R/3, offering a more simplified, real-time, and efficient platform for modern enterprise needs."
+    }
+  ];
+
+  var SKILLS = [
+    // cat: tech | soft | core
+    { name:"SAP PLM/MM/DMS", score:7, cat:"tech", origin:"Daimler India Commercial Vehicles" },
+    { name:"Asana", score:9, cat:"tech", origin:"eternal.ag" },
+    { name:"Microsoft Teams", score:10, cat:"tech", origin:"Daimler India Commercial Vehicles" },
+    { name:"Excel Automation", score:8, cat:"tech", origin:"eternal.ag" },
+    { name:"Power BI", score:8, cat:"tech", origin:"Daimler India Commercial Vehicles" },
+    { name:"Business Process Design", score:7, cat:"tech", origin:"eternal.ag" },
+    { name:"Workflow Automation", score:8, cat:"tech", origin:"eternal.ag" },
+    { name:"Procurement Systems", score:8, cat:"tech", origin:"eternal.ag" },
+
+    { name:"Problem-Solving", score:8, cat:"soft", origin:"Unisys India" },
+    { name:"Ownership & Accountability", score:8, cat:"soft", origin:"eternal.ag" },
+    { name:"Stakeholder Management", score:9, cat:"soft", origin:"Daimler India Commercial Vehicles" },
+    { name:"Cross-functional Collaboration", score:9, cat:"soft", origin:"Daimler India Commercial Vehicles" },
+    { name:"Communication", score:10, cat:"soft", origin:"Daimler India Commercial Vehicles" },
+    { name:"Decision-Making", score:8, cat:"soft", origin:"eternal.ag" },
+
+    { name:"Digital Transformation", score:9, cat:"core", origin:"Daimler India Commercial Vehicles" },
+    { name:"Business Process Automation", score:8, cat:"core", origin:"eternal.ag" },
+    { name:"Procurement & Supply Chain Operations", score:9, cat:"core", origin:"eternal.ag" },
+    { name:"Process Optimization", score:8, cat:"core", origin:"eternal.ag — roots at Unisys India" },
+    { name:"End-to-End Operations", score:8, cat:"core", origin:"eternal.ag" },
+    { name:"Vendor & Supplier Management", score:9, cat:"core", origin:"eternal.ag" },
+    { name:"UAT & System Rollouts", score:9, cat:"core", origin:"Daimler India Commercial Vehicles" },
+    { name:"Operational Analytics", score:9, cat:"core", origin:"Daimler India Commercial Vehicles" }
+  ];
+  var CATLABEL = { tech:"Technical", soft:"Soft Skill", core:"Core Competency" };
+
+  /* ============================================================
+     CLOCK
+     ============================================================ */
+  var clockEl = document.getElementById("clock");
+  function tick(){
+    try{
+      var t = new Date().toLocaleTimeString("en-GB", { timeZone:"Asia/Kolkata", hour12:false });
+      clockEl.textContent = t + " IST";
+    }catch(e){ clockEl.textContent = new Date().toTimeString().slice(0,8) + " LOCAL"; }
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ============================================================
+     COUNT-UP (hero status strip)
+     ============================================================ */
+  function animateCount(el){
+    var target = parseFloat(el.getAttribute("data-count"));
+    var dec = parseInt(el.getAttribute("data-decimals") || "0", 10);
+    var node = el.firstChild; // the "0" text node before the .u unit span
+    if (REDUCED){ node.nodeValue = target.toFixed(dec); return; }
+    var dur = 1400, start = performance.now();
+    function step(now){
+      var p = Math.min(1, Math.max(0, (now - start) / dur));
+      var e = 1 - Math.pow(1 - p, 3);
+      node.nodeValue = (target * e).toFixed(dec);
+      if (p < 1) requestAnimationFrame(step);
+      else node.nodeValue = target.toFixed(dec);
+    }
+    requestAnimationFrame(step);
+  }
+  var counters = Array.prototype.slice.call(document.querySelectorAll(".stat-val"));
+  if ("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){ animateCount(en.target); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(function(c){ io.observe(c); });
+  } else {
+    counters.forEach(animateCount);
+  }
+
+  /* ============================================================
+     SHARED MODAL PLUMBING (focus trap)
+     ============================================================ */
+  var lastFocused = null;
+  var activeOverlay = null;
+  var closeTimer = null;
+
+  function focusables(container){
+    return Array.prototype.slice.call(container.querySelectorAll(
+      'a[href],button:not([disabled]),input:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    )).filter(function(el){
+      if (el.getAttribute("tabindex") === "-1") return false;
+      if (el.closest('[aria-hidden="true"]')) return false;
+      var r = el.getBoundingClientRect();
+      return (r.width > 0 && r.height > 0) || el === document.activeElement;
+    });
+  }
+
+  var MOVER_SEL  = '.role-panel, .badge, .cert-modal';   // promoted for the open anim
+  var EMERGE_SEL = '.role-panel, .cert-modal';           // grows from the click (badge keeps its 3-D intro)
+
+  function hintWillChange(overlay){
+    // promote the moving element only while its open animation runs, then release
+    var el = overlay.querySelector(MOVER_SEL);
+    if (!el) return;
+    el.style.willChange = "transform";
+    var clear = function(){ el.style.willChange = ""; el.removeEventListener("animationend", clear); };
+    el.addEventListener("animationend", clear);
+    window.setTimeout(clear, 900);
+  }
+
+  /* point an about-to-open box's transform-origin at the thing that was clicked,
+     so its scale-in (@keyframes pop) grows OUT of that click rather than from
+     its own centre. Works for centred panels and for left/top-positioned
+     popovers alike. One-time reflow on open — never per frame. */
+  function emergeOrigin(el, r){
+    if (!el || !r || REDUCED) return;
+    el.style.animation = "none";
+    el.style.transformOrigin = "50% 50%";
+    void el.offsetWidth;                                   // commit the disable
+    var er = el.getBoundingClientRect();                   // untransformed box
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    el.style.transformOrigin = Math.round(cx - er.left) + "px " + Math.round(cy - er.top) + "px";
+    el.style.animation = "";                               // restart pop with the new origin
+  }
+
+  function openOverlay(overlay, opener, initialFocus){
+    if (closeTimer){ clearTimeout(closeTimer); closeTimer = null; }
+    document.querySelectorAll(".overlay").forEach(function(o){ o.hidden = true; o.classList.remove("closing"); });
+    lastFocused = opener || document.activeElement;
+    overlay.hidden = false;
+    activeOverlay = overlay;
+    document.body.style.overflow = "hidden";
+    var em = overlay.querySelector(EMERGE_SEL);
+    if (em){
+      if (opener && opener.getBoundingClientRect) emergeOrigin(em, opener.getBoundingClientRect());
+      else em.style.transformOrigin = "";
+    }
+    hintWillChange(overlay);
+    var f = initialFocus || focusables(overlay)[0];
+    if (f) f.focus();
+    document.addEventListener("keydown", onModalKey, true);
+  }
+
+  function closeOverlay(overlay){
+    if (!overlay || overlay.hidden) return;
+    var mover = overlay.querySelector(MOVER_SEL);
+    if (mover) mover.style.willChange = "";
+    overlay.classList.add("closing");
+    var ov = overlay;
+    closeTimer = window.setTimeout(function(){
+      ov.hidden = true;
+      ov.classList.remove("closing");
+      closeTimer = null;
+    }, REDUCED ? 0 : 170);
+    activeOverlay = null;
+    document.body.style.overflow = "";
+    document.removeEventListener("keydown", onModalKey, true);
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+    // reset timeline markers
+    if (overlay === roleOverlay){
+      allMarkers.forEach(function(m){ m.setAttribute("aria-expanded","false"); });
+    }
+    if (overlay === contactOverlay){
+      badge.classList.remove("flipped");
+    }
+    if (overlay === certOverlay){
+      certButtons.forEach(function(b){ b.setAttribute("aria-expanded", "false"); });
+    }
+  }
+
+  function onModalKey(e){
+    if (!activeOverlay) return;
+    if (e.key === "Escape"){ e.preventDefault(); closeOverlay(activeOverlay); return; }
+    if (e.key === "Tab"){
+      var dialog = activeOverlay.querySelector('[role="dialog"]');
+      var list = focusables(dialog);
+      if (!list.length) return;
+      var first = list[0], last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  }
+
+  // click-outside + [data-close] buttons
+  document.addEventListener("click", function(e){
+    if (!activeOverlay) return;
+    if (e.target.closest("[data-close]")){ closeOverlay(activeOverlay); return; }
+    var dialog = activeOverlay.querySelector('[role="dialog"]');
+    if (dialog && !dialog.contains(e.target) && activeOverlay.contains(e.target)){
+      closeOverlay(activeOverlay);
+    }
+  });
+
+  /* ============================================================
+     CONTACT / ID BADGE
+     ============================================================ */
+  var contactOverlay = document.getElementById("contactOverlay");
+  var badge = document.getElementById("badge");
+  var nameBtn = document.getElementById("nameBtn");
+  var footContact = document.getElementById("footContact");
+
+  var badgeFront = badge.querySelector(".badge-front");
+  var badgeBack = badge.querySelector(".badge-back");
+
+  function setFaceInert(face, inert){
+    face.setAttribute("aria-hidden", inert ? "true" : "false");
+    Array.prototype.forEach.call(face.querySelectorAll("a[href],button"), function(el){
+      if (inert) el.setAttribute("tabindex", "-1");
+      else el.removeAttribute("tabindex");
+    });
+  }
+  function syncBadge(showBack){
+    badge.classList.toggle("flipped", !!showBack);
+    setFaceInert(badgeFront, !!showBack);
+    setFaceInert(badgeBack, !showBack);
+  }
+
+  function openContact(e){
+    syncBadge(false);
+    openOverlay(contactOverlay, e ? e.currentTarget : null);
+  }
+  nameBtn.addEventListener("click", openContact);
+  footContact.addEventListener("click", openContact);
+  var ctaBadge = document.getElementById("ctaBadge");
+  if (ctaBadge) ctaBadge.addEventListener("click", openContact);
+
+  document.getElementById("flipToBack").addEventListener("click", function(){
+    syncBadge(true);
+    var f = focusables(badgeBack)[0]; if (f) f.focus();
+  });
+  document.getElementById("flipToFront").addEventListener("click", function(){
+    syncBadge(false);
+    var f = focusables(badgeFront)[0]; if (f) f.focus();
+  });
+
+  /* ============================================================
+     TIMELINES — experience + academic record share one panel
+     ============================================================ */
+  var roleOverlay = document.getElementById("roleOverlay");
+  var rolePanel  = document.getElementById("rolePanel");
+  var rpTag   = document.getElementById("rpTag");
+  var rpCo    = document.getElementById("rpCo");
+  var rpTitle = document.getElementById("rpTitle");
+  var rpMeta  = document.getElementById("rpMeta");
+  var rpBody  = document.getElementById("rpBody");
+  var allMarkers = [];
+
+  function esc(str){
+    return String(str).replace(/[&<>]/g, function(c){
+      return c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;";
+    });
+  }
+
+  function buildTimeline(olEl, items, tagLabel){
+    items.forEach(function(it){
+      var li = document.createElement("li");
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tl-marker";
+      btn.setAttribute("aria-expanded", "false");
+      btn.setAttribute("aria-controls", "roleOverlay");
+      btn.innerHTML =
+        '<span class="tl-year mono">' + esc(it.year) + '</span>' +
+        '<span class="tl-dot" aria-hidden="true"></span>' +
+        '<span class="tl-body">' +
+          '<span class="tl-co">' + esc(it.co) + '</span>' +
+          '<span class="tl-title mono">' + esc(it.title) + '</span>' +
+          (it.meta && it.meta[1] ? '<span class="tl-loc mono">' + esc(it.meta[1]) + '</span>' : '') +
+        '</span>';
+      btn.addEventListener("click", function(){ openDetail(it, tagLabel, btn); });
+      li.appendChild(btn);
+      olEl.appendChild(li);
+      allMarkers.push(btn);
+    });
+  }
+
+  buildTimeline(document.getElementById("timeline"), EXPERIENCE, "Log entry");
+  buildTimeline(document.getElementById("eduline"), EDU, "Academic record");
+
+  /* PROJECTS — case-file filmstrip (opens the same dossier panel) */
+  function buildCaseFiles(el, items){
+    var total = ("0" + items.length).slice(-2);
+    items.forEach(function(it, i){
+      var no = ("0" + (i + 1)).slice(-2);
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "casefile";
+      btn.setAttribute("aria-haspopup", "dialog");
+      btn.setAttribute("aria-controls", "roleOverlay");
+      btn.setAttribute("aria-expanded", "false");
+      btn.innerHTML =
+        '<span class="cf-no">Case ' + no + ' / ' + total + '</span>' +
+        '<span class="cf-title">' + esc(it.co) + '</span>' +
+        '<span class="cf-org">' + esc(it.org) + '</span>' +
+        '<span class="cf-teaser">' + esc(it.teaser) + '</span>' +
+        '<span class="cf-open" aria-hidden="true">Open file</span>';
+      btn.addEventListener("click", function(){ openDetail(it, "Case file", btn); });
+      el.appendChild(btn);
+      allMarkers.push(btn);
+    });
+  }
+  buildCaseFiles(document.getElementById("casefiles"), PROJECTS);
+
+  function openDetail(it, tagLabel, opener){
+    allMarkers.forEach(function(m){ m.setAttribute("aria-expanded", m === opener ? "true" : "false"); });
+
+    rpTag.textContent = tagLabel;
+    rpCo.textContent = it.co;
+    rpTitle.textContent = it.title;
+
+    rpMeta.innerHTML = "";
+    (it.meta || []).forEach(function(m){
+      var s = document.createElement("span"); s.textContent = m; rpMeta.appendChild(s);
+    });
+
+    var html = "";
+    // degree / role info first
+    (it.blocks || []).forEach(function(b){
+      html += '<div class="rp-block"><h4>' + esc(b.h) + '</h4><p>' + esc(b.body) + '</p></div>';
+    });
+    if (it.metric){
+      html += '<div class="rp-block" style="padding-bottom:4px"><h4>' + esc(it.metricH || "Headline metric") + '</h4></div>' +
+              '<div class="rp-metric"><span class="big">' + esc(it.metric) + '</span>' +
+              '<span class="cap">' + esc(it.metricCap || "On record") + '</span></div>';
+    }
+    if (it.list){
+      html += '<div class="rp-block"><h4>' + esc(it.list.h) + '</h4></div><ul class="rp-skills">';
+      it.list.items.forEach(function(x){ html += '<li>' + esc(x) + '</li>'; });
+      html += '</ul>';
+    }
+    // then the nested project (Education): "PROJECT" divider → diagram → brief → fuller description
+    if (it.project){
+      var pj = it.project;
+      html += '<div class="rp-block rp-proj-div"><h4>Project</h4></div>';
+      if (pj.title)   html += '<p class="rp-proj-title">' + esc(pj.title) + '</p>';
+      if (pj.context) html += '<p class="rp-proj-ctx mono">' + esc(pj.context) + '</p>';
+      if (pj.img){
+        html += '<figure class="rp-figure"><img class="rp-img" src="' + esc(pj.img) +
+                '" alt="' + esc(pj.imgAlt || "") + '"' +
+                (pj.w ? ' width="' + pj.w + '" height="' + pj.h + '"' : '') +
+                ' loading="lazy" decoding="async"></figure>';
+      }
+      if (pj.brief) html += '<p class="rp-brief">' + esc(pj.brief) + '</p>';
+      if (pj.body)  html += '<div class="rp-block"><p>' + esc(pj.body) + '</p></div>';
+    }
+    rpBody.innerHTML = html;
+
+    rolePanel.scrollTop = 0;
+    openOverlay(roleOverlay, opener, rolePanel.querySelector(".close-modal"));
+  }
+
+  /* ============================================================
+     CERTIFICATIONS — list renders to clickable cards; each opens a
+     lightbox that reuses the shared overlay plumbing (open/close
+     motion, Esc, click-outside, focus trap, return-focus).
+     ============================================================ */
+  var certOverlay   = document.getElementById("certOverlay");
+  var certModal     = document.getElementById("certModal");
+  var certModalTag  = document.getElementById("certModalTag");
+  var certModalName = document.getElementById("certModalName");
+  var certModalMeta = document.getElementById("certModalMeta");
+  var certShot      = document.getElementById("certShot");
+  var certModalDesc = document.getElementById("certModalDesc");
+  var certLinkedin  = document.getElementById("certLinkedin");
+  var CERT_LINKEDIN_URL = "https://www.linkedin.com/in/chintan-dhamecha/details/certifications/";
+  var certButtons = [];
+
+  function buildCerts(el, items){
+    items.forEach(function(c){
+      var li = document.createElement("li");
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cert";
+      btn.setAttribute("aria-haspopup", "dialog");
+      btn.setAttribute("aria-controls", "certOverlay");
+      btn.setAttribute("aria-expanded", "false");
+      btn.innerHTML =
+        '<span class="c-name">' + esc(c.name) + '</span>' +
+        '<span class="c-body">' + esc(c.issuer) + '</span>' +
+        '<span class="c-yr mono">' + esc(c.year) + '</span>' +
+        '<span class="c-open" aria-hidden="true">View credential ▸</span>';
+      btn.addEventListener("click", function(){ openCert(c, btn); });
+      li.appendChild(btn);
+      el.appendChild(li);
+      certButtons.push(btn);
+    });
+  }
+  buildCerts(document.getElementById("certs"), CERTS);
+
+  function openCert(c, opener){
+    certButtons.forEach(function(b){
+      b.setAttribute("aria-expanded", b === opener ? "true" : "false");
+    });
+
+    certModalTag.textContent = "Credential on file";
+    certModalName.textContent = c.name;
+    certModalMeta.textContent = c.issuer + " · " + c.year;
+
+    // certificate image — swap to a placeholder if the file isn't on disk
+    certShot.innerHTML = "";
+    var img = document.createElement("img");
+    img.className = "cert-img";
+    img.alt = c.name + " — certificate";
+    img.addEventListener("error", function(){
+      certShot.innerHTML =
+        '<div class="cert-img-missing mono">Certificate image not on file' +
+        '<br><span>expected at ' + esc(c.img) + '</span></div>';
+    });
+    img.src = c.img;
+    certShot.appendChild(img);
+
+    certModalDesc.textContent = c.desc;
+    certLinkedin.href = CERT_LINKEDIN_URL;
+
+    certModal.scrollTop = 0;
+    openOverlay(certOverlay, opener, certModal.querySelector(".close-modal"));
+  }
+
+  /* ============================================================
+     SKILL CONSTELLATION
+     ============================================================ */
+  var box = document.getElementById("constellation");
+  var linkCanvas = document.getElementById("links");
+  var lctx = linkCanvas.getContext("2d");
+  var fallback = document.getElementById("nodeFallback");
+  var nodes = [];
+
+  // deterministic pseudo-random
+  function rnd(seed){ var x = Math.sin(seed * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+
+  // Deterministic grid scatter: nodes are ordered tech -> soft -> core in SKILLS,
+  // so filling the grid row-major gives a loose top-to-bottom grouping by category.
+  var COLS = 5, ROWS = Math.ceil(SKILLS.length / COLS);
+
+  SKILLS.forEach(function(s, i){
+    var cx = i % COLS, cy = Math.floor(i / COLS);
+    var jx = (rnd(i + 1) - 0.5) * 0.78;
+    var jy = (rnd(i + 91) - 0.5) * 0.78;
+    var hx = 11 + ((cx + 0.5 + jx) / COLS) * 78;
+    var hy = 12 + ((cy + 0.5 + jy) / ROWS) * 76;
+
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "node";
+    b.setAttribute("data-cat", s.cat);
+    b.setAttribute("aria-pressed", "false");
+    b.setAttribute("aria-label", s.name + " — proficiency " + s.score + " of 10 — built at " + s.origin);
+    b.innerHTML = '<span class="pip" aria-hidden="true"></span>' + s.name;
+    b.style.fontSize = (10 + s.score * 0.4).toFixed(1) + "px"; // subtly sized by proficiency
+    b.style.left = hx + "%";
+    b.style.top = hy + "%";
+    b.addEventListener("click", function(){ openReadout(i, b); });
+    box.appendChild(b);
+
+    nodes.push({
+      el: b, data: s,
+      hx: hx, hy: hy,
+      phase: rnd(i + 200) * Math.PI * 2,
+      speed: 0.15 + rnd(i + 300) * 0.35,
+      amp: 5 + rnd(i + 400) * 9
+    });
+
+    var li = document.createElement("li");
+    li.textContent = s.name + " · " + s.score + "/10";
+    fallback.appendChild(li);
+  });
+
+  var STATIC = REDUCED || MID();  // constellation drops to a static wrapped field at/under 780px
+
+  // Relax node home positions: push apart overlapping labels, then clamp inside the box.
+  function layoutNodes(){
+    if (STATIC) return;
+    var r = box.getBoundingClientRect();
+    if (!r.width) return;
+    var W = r.width, H = r.height;
+    var P = nodes.map(function(n){
+      return { n:n, x:n.hx / 100 * W, y:n.hy / 100 * H,
+               w:n.el.offsetWidth, h:n.el.offsetHeight };
+    });
+    for (var iter = 0; iter < 60; iter++){
+      for (var i = 0; i < P.length; i++){
+        for (var j = i + 1; j < P.length; j++){
+          var a = P[i], b = P[j];
+          var ox = (a.w + b.w) / 2 + 12 - Math.abs(a.x - b.x);
+          var oy = (a.h + b.h) / 2 + 10 - Math.abs(a.y - b.y);
+          if (ox > 0 && oy > 0){
+            if (ox < oy){
+              var sx = (a.x <= b.x ? -1 : 1) * ox / 2;
+              a.x += sx; b.x -= sx;
+            } else {
+              var sy = (a.y <= b.y ? -1 : 1) * oy / 2;
+              a.y += sy; b.y -= sy;
+            }
+          }
+        }
+      }
+      for (var k = 0; k < P.length; k++){
+        var p = P[k];
+        var mx = p.w / 2 + p.n.amp + 6, my = p.h / 2 + p.n.amp + 6;
+        p.x = Math.max(mx, Math.min(W - mx, p.x));
+        p.y = Math.max(my, Math.min(H - my, p.y));
+      }
+    }
+    P.forEach(function(p){
+      p.n.hx = p.x / W * 100; p.n.hy = p.y / H * 100;
+      p.n.el.style.left = p.n.hx.toFixed(2) + "%";
+      p.n.el.style.top = p.n.hy.toFixed(2) + "%";
+    });
+  }
+
+  /* ---- link web: drawn ONCE, redrawn only on layout changes ----
+     No per-frame rAF loop, no per-frame DOM writes on the nodes.
+     The nodes sit still; #links gets a compositor-only opacity pulse
+     from CSS. This removes ~22 style.transform writes + an O(n^2)
+     canvas pass every frame, and a whole second rAF loop. */
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var boxW = 0, boxH = 0;
+  function sizeLinks(){
+    var r = box.getBoundingClientRect();   // layout read only on init / resize
+    boxW = r.width; boxH = r.height;
+    linkCanvas.width = r.width * DPR;
+    linkCanvas.height = r.height * DPR;
+    lctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  function drawLinks(){
+    var w = boxW, h = boxH;
+    lctx.clearRect(0, 0, w, h);
+    if (STATIC || !w || !h) return;
+    var maxD = Math.min(w, h) * 0.34;
+    var pts = nodes.map(function(n){ return { x: n.hx / 100 * w, y: n.hy / 100 * h }; });
+    for (var a = 0; a < pts.length; a++){
+      for (var b2 = a + 1; b2 < pts.length; b2++){
+        var ddx = pts[a].x - pts[b2].x, ddy = pts[a].y - pts[b2].y;
+        var d = Math.sqrt(ddx * ddx + ddy * ddy);
+        if (d < maxD){
+          lctx.strokeStyle = "rgba(47,227,196," + ((1 - d / maxD) * 0.28).toFixed(3) + ")";
+          lctx.lineWidth = 1;
+          lctx.beginPath();
+          lctx.moveTo(pts[a].x, pts[a].y);
+          lctx.lineTo(pts[b2].x, pts[b2].y);
+          lctx.stroke();
+        }
+      }
+    }
+  }
+  sizeLinks();
+
+  if (STATIC){
+    box.classList.add("is-static");
+  } else {
+    layoutNodes(); drawLinks();
+    if (document.fonts && document.fonts.ready){
+      document.fonts.ready.then(function(){ sizeLinks(); layoutNodes(); drawLinks(); });
+    }
+    if ("IntersectionObserver" in window){
+      var cio = new IntersectionObserver(function(en){
+        if (en[0].isIntersecting){ sizeLinks(); layoutNodes(); drawLinks(); cio.disconnect(); }
+      }, { threshold: 0.15 });
+      cio.observe(box);
+    }
+  }
+
+  /* ============================================================
+     SKILL READOUT (non-modal popover)
+     ============================================================ */
+  var readout = document.getElementById("readout");
+  var roCat = document.getElementById("roCat");
+  var roName = document.getElementById("roName");
+  var roScore = document.getElementById("roScore");
+  var roArc = document.getElementById("roArc");
+  var roOrigin = document.getElementById("roOrigin");
+  var roClose = document.getElementById("roClose");
+  var CIRC = 2 * Math.PI * 30; // 188.5
+  var readoutNode = null;
+  var scoreRaf = null;
+
+  function positionReadout(nodeEl){
+    var nr = nodeEl.getBoundingClientRect();
+    readout.style.visibility = "hidden";
+    readout.hidden = false;
+    var rr = readout.getBoundingClientRect();
+    var margin = 12;
+    var left = nr.right + margin;
+    if (left + rr.width > window.innerWidth - margin) left = nr.left - margin - rr.width;
+    if (left < margin) left = Math.min(margin, window.innerWidth - rr.width - margin);
+    var top = nr.top + nr.height / 2 - rr.height / 2;
+    if (top < margin) top = margin;
+    if (top + rr.height > window.innerHeight - margin) top = window.innerHeight - margin - rr.height;
+    if (SMALL()){
+      left = (window.innerWidth - rr.width) / 2;
+      top = window.innerHeight - rr.height - margin;
+    }
+    readout.style.left = Math.round(left) + "px";
+    readout.style.top = Math.round(top) + "px";
+    readout.style.visibility = "";
+  }
+
+  function openReadout(i, nodeEl){
+    closeFact(false);   // the two lightweight popovers are mutually exclusive
+    var s = SKILLS[i];
+    if (readoutNode && readoutNode !== nodeEl) readoutNode.setAttribute("aria-pressed", "false");
+    readoutNode = nodeEl;
+    nodeEl.setAttribute("aria-pressed", "true");
+
+    // make sure the node is on screen so the readout lands beside it
+    var nb = nodeEl.getBoundingClientRect();
+    if (nb.top < 8 || nb.bottom > window.innerHeight - 8){
+      var prevSB = docEl.style.scrollBehavior;
+      docEl.style.scrollBehavior = "auto";
+      nodeEl.scrollIntoView({ block: "center" });
+      docEl.style.scrollBehavior = prevSB;
+    }
+
+    readout.setAttribute("data-cat", s.cat);
+    roArc.style.stroke = s.cat === "core" ? "var(--amber)" : "var(--teal)";
+    roCat.textContent = CATLABEL[s.cat];
+    roName.textContent = s.name;
+    roOrigin.innerHTML = "Built at <b>" + s.origin + "</b>.";
+
+    // gauge
+    var target = s.score;
+    if (scoreRaf) cancelAnimationFrame(scoreRaf);
+    if (REDUCED){
+      roScore.textContent = target;
+      roArc.style.strokeDashoffset = (CIRC * (1 - target / 10)).toFixed(1);
+    } else {
+      var start = performance.now(), dur = 650;
+      (function anim(now){
+        var p = Math.min(1, Math.max(0, (now - start) / dur));
+        var e = 1 - Math.pow(1 - p, 3);
+        roScore.textContent = Math.round(target * e);
+        roArc.style.strokeDashoffset = (CIRC * (1 - (target * e) / 10)).toFixed(1);
+        if (p < 1) scoreRaf = requestAnimationFrame(anim);
+        else { roScore.textContent = target; roArc.style.strokeDashoffset = (CIRC * (1 - target / 10)).toFixed(1); }
+      })(start);
+    }
+
+    positionReadout(nodeEl);
+    emergeOrigin(readout, nodeEl.getBoundingClientRect());   // grow out of the tapped node
+    roClose.focus();
+    document.addEventListener("keydown", onReadoutKey, true);
+    setTimeout(function(){ document.addEventListener("click", onReadoutOutside, true); }, 0);
+  }
+
+  function closeReadout(returnFocus){
+    if (readout.hidden) return;
+    readout.hidden = true;
+    if (readoutNode){
+      readoutNode.setAttribute("aria-pressed", "false");
+      if (returnFocus) readoutNode.focus();
+      readoutNode = null;
+    }
+    document.removeEventListener("keydown", onReadoutKey, true);
+    document.removeEventListener("click", onReadoutOutside, true);
+  }
+  function onReadoutKey(e){ if (e.key === "Escape"){ e.preventDefault(); closeReadout(true); } }
+  function onReadoutOutside(e){
+    if (readout.contains(e.target)) return;
+    if (e.target.closest(".node")) return; // handled by node click
+    closeReadout(false);
+  }
+  roClose.addEventListener("click", function(){ closeReadout(true); });
+
+  /* ============================================================
+     AMBIENT SPACE FACTS  +  PLANET FACTS
+     8 space-fact labels drift sitewide via CSS keyframes (no JS loop).
+     8 invisible planet hit-targets track the canvas solar system and
+     are positioned from inside the single background rAF loop.
+     Both share one lightweight popover (#factpop).
+     ============================================================ */
+  // positioned in the page's side gutters (fixed) so they read as quiet
+  // background texture and rarely overlap portfolio content
+  var SPACE_FACTS = [
+    { label:"SPEED OF LIGHT",      text:"Light travels at about 299,792 km/s (roughly 300,000 km/s) in a vacuum.", css:{ top:"13%", left:"3.5%" } },
+    { label:"AGE OF THE GALAXY",   text:"The Milky Way is estimated to be about 13.6 billion years old.", css:{ top:"40%", left:"3%" }, hideSm:true },
+    { label:"ESCAPE VELOCITY",     text:"Escaping Earth's gravity requires reaching about 11.2 km/s.", css:{ top:"60%", left:"3.5%" }, hideSm:true },
+    { label:"NEAREST STAR",        text:"Proxima Centauri, the nearest star beyond the Sun, is about 4.24 light-years away.", css:{ top:"82%", left:"4%" } },
+    { label:"EARTH'S AGE",         text:"Earth itself is estimated to be about 4.54 billion years old.", css:{ top:"10%", right:"4.5%" } },
+    { label:"SUN ↔ EARTH",         text:"The Sun is about 149.6 million km from Earth (1 astronomical unit) — light from it takes about 8 minutes 20 seconds to reach us.", css:{ top:"30%", right:"4.5%" } },
+    { label:"AGE OF THE UNIVERSE", text:"The universe is estimated to be about 13.8 billion years old.", css:{ top:"52%", right:"4%" }, hideSm:true },
+    { label:"MILKY WAY WIDTH",     text:"The Milky Way is roughly 100,000 light-years across.", css:{ top:"84%", right:"5.5%" } }
+  ];
+
+  // order matches the PLANETS array below (Mercury -> Neptune)
+  var PLANET_FACTS = [
+    { name:"Mercury", fact:"Temperatures swing from about 430°C in the day to -180°C at night — a range of over 600°C — because it has almost no atmosphere to hold in heat." },
+    { name:"Venus",   fact:"Surface temperature is about 465°C, hot enough to melt lead, trapped by a runaway greenhouse effect under a surface pressure roughly 90 times Earth's — like being 900 meters underwater." },
+    { name:"Earth",   fact:"About 66 million years ago, an asteroid impact wiped out roughly 75% of all species on the planet, including the dinosaurs." },
+    { name:"Mars",    fact:"Planet-wide dust storms can engulf all of Mars for months at a time, blotting out the sun completely." },
+    { name:"Jupiter", fact:"Its Great Red Spot is a storm larger than Earth that has raged for at least 190 years, with wind speeds up to about 432 km/h." },
+    { name:"Saturn",  fact:"Wind speeds in its atmosphere can reach up to about 1,800 km/h — among the fastest winds in the solar system." },
+    { name:"Uranus",  fact:"It rotates almost completely on its side (axial tilt of about 98°), so each pole gets 42 years of continuous sunlight followed by 42 years of darkness." },
+    { name:"Neptune", fact:"It has the strongest sustained winds in the solar system, reaching up to about 2,100 km/h — supersonic speeds." }
+  ];
+
+  var factpop      = document.getElementById("factpop");
+  var factpopLabel = document.getElementById("factpopLabel");
+  var factpopText  = document.getElementById("factpopText");
+  var factpopClose = document.getElementById("factpopClose");
+  var factTrigger  = null;
+
+  function placePopover(pop, anchor){
+    pop.style.visibility = "hidden";
+    pop.hidden = false;
+    var rr = pop.getBoundingClientRect();
+    var m = 12;
+    var left = anchor.right + m;
+    if (left + rr.width > window.innerWidth - m) left = anchor.left - m - rr.width;
+    if (left < m) left = Math.max(m, (window.innerWidth - rr.width) / 2);
+    var top = anchor.top + (anchor.height || 0) / 2 - rr.height / 2;
+    top = Math.max(m, Math.min(window.innerHeight - m - rr.height, top));
+    if (SMALL()){
+      left = (window.innerWidth - rr.width) / 2;
+      top = window.innerHeight - rr.height - m;
+    }
+    pop.style.left = Math.round(left) + "px";
+    pop.style.top = Math.round(top) + "px";
+    pop.style.visibility = "";
+  }
+
+  function openFact(label, text, triggerEl){
+    closeReadout(false);
+    if (factTrigger && factTrigger !== triggerEl) factTrigger.setAttribute("aria-expanded", "false");
+    factTrigger = triggerEl || null;
+    if (factTrigger) factTrigger.setAttribute("aria-expanded", "true");
+    factpopLabel.textContent = label;
+    factpopText.textContent = text;
+    var anchor = triggerEl ? triggerEl.getBoundingClientRect()
+      : { left:window.innerWidth/2, right:window.innerWidth/2, top:window.innerHeight/2, height:0 };
+    placePopover(factpop, anchor);
+    emergeOrigin(factpop, {                             // grow out of the tapped label / planet
+      left: anchor.left, top: anchor.top,
+      width: (anchor.right - anchor.left) || 0, height: anchor.height || 0
+    });
+    factpopClose.focus();
+    document.addEventListener("keydown", onFactKey, true);
+    setTimeout(function(){ document.addEventListener("click", onFactOutside, true); }, 0);
+  }
+  function closeFact(returnFocus){
+    if (factpop.hidden) return;
+    factpop.hidden = true;
+    if (factTrigger){
+      factTrigger.setAttribute("aria-expanded", "false");
+      if (returnFocus && factTrigger.focus) factTrigger.focus();
+      factTrigger = null;
+    }
+    document.removeEventListener("keydown", onFactKey, true);
+    document.removeEventListener("click", onFactOutside, true);
+  }
+  function onFactKey(e){ if (e.key === "Escape"){ e.preventDefault(); closeFact(true); } }
+  function onFactOutside(e){
+    if (factpop.contains(e.target)) return;
+    if (e.target.closest(".spacefact, .planet-hit")) return; // their own handlers
+    closeFact(false);
+  }
+  factpopClose.addEventListener("click", function(){ closeFact(true); });
+
+  // --- build the drifting space-fact labels ---
+  var factLayer = document.getElementById("spacefacts");
+  var factBtns = SPACE_FACTS.map(function(f, i){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "spacefact mono" + (f.hideSm ? " sf-hide-sm" : "");
+    b.textContent = f.label;
+    b.setAttribute("aria-haspopup", "dialog");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-label", f.label + " — reveal space fact");
+    b.style.top = f.css.top;
+    if (f.css.left != null) b.style.left = f.css.left; else b.style.right = f.css.right;
+    b.style.setProperty("--dx", ((rnd(i + 10) - 0.5) * 26).toFixed(1) + "px");
+    b.style.setProperty("--dy", ((rnd(i + 20) - 0.5) * 22).toFixed(1) + "px");
+    b.style.setProperty("--dur", (23 + rnd(i + 30) * 17).toFixed(1) + "s");
+    b.style.setProperty("--delay", (-(rnd(i + 40) * 22)).toFixed(1) + "s");
+    b.addEventListener("click", function(){ openFact(f.label, f.text, b); });
+    factLayer.appendChild(b);
+    return b;
+  });
+
+  // --- build the planet hit-targets (positions synced from renderBg) ---
+  var planetLayer = document.getElementById("planetHits");
+  var planetBtns = PLANET_FACTS.map(function(pf){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "planet-hit";
+    b.hidden = true;
+    b._vis = false;
+    b.setAttribute("aria-haspopup", "dialog");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-label", pf.name + " — reveal a fact about " + pf.name);
+    b.addEventListener("click", function(){ openFact(pf.name.toUpperCase(), pf.fact, b); });
+    planetLayer.appendChild(b);
+    return b;
+  });
+
+  /* --- the Sun: focusable hit-target + a VISIBLE 100-tap counter ---
+     On the 100th tap the Sun collapses into a black hole, every planet is
+     pulled in and consumed, the hole blasts, and the page inverts —
+     PERMANENTLY (only a reload restores it). All state in-memory. */
+  var EGG = { clicks: 0, state: "idle", t0: 0, holeX: 0, holeY: 0, holeR: 0, didInvert: false, blastFired: false };
+  var eggSnap = null;                               // frozen planet/ring geometry for the consume
+  var sunHitBtn = document.createElement("button");
+  sunHitBtn.type = "button";
+  sunHitBtn.className = "planet-hit sun-hit";
+  sunHitBtn.setAttribute("aria-label", "The Sun — tap to charge the collapse");
+  sunHitBtn.addEventListener("click", function(){ sunActivated(sunScreen.x, sunScreen.y); });
+  planetLayer.appendChild(sunHitBtn);
+
+  var sunCounterEl = document.getElementById("sunCounter");
+  var eggPopup = document.getElementById("eggPopup");
+  var eggPopupClose = document.getElementById("eggPopupClose");
+  // counter is unhidden by drawSolarSystem once it has a real position (avoids a corner flash)
+  if (eggPopupClose) eggPopupClose.addEventListener("click", function(){
+    eggPopup.hidden = true;                         // hides the callout only — never un-inverts
+  });
+  function updateSunCounter(){
+    if (sunCounterEl) sunCounterEl.innerHTML = EGG.clicks + ' <b>/ 100</b>';
+  }
+
+  /* ============================================================
+     AMBIENT AUDIO — one site-wide sound toggle gates BOTH tracks.
+     Nothing autoplays; both <audio> are preload="none" and loop.
+     - background track: quiet, plays only while the toggle is on
+     - black hole loop: starts at the blast, loops until reload, only
+       audible if the toggle is on (the egg still runs silently if off)
+     ============================================================ */
+  var bgAudio     = document.getElementById("bgAudio");
+  var bhAudio     = document.getElementById("bhAudio");
+  var soundToggle = document.getElementById("soundToggle");
+  var soundOn = false;                                // off by default; in-memory only
+  var BG_VOL = 0.16, BG_VOL_DUCK = 0.05, BH_VOL = 0.5;
+
+  function rampVol(el, to, ms){                       // short self-terminating volume ramp
+    if (!el) return;
+    var from = el.volume, t0 = performance.now();
+    (function step(now){
+      var k = ms > 0 ? Math.min(1, (now - t0) / ms) : 1;
+      try { el.volume = from + (to - from) * k; } catch (e) {}
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  function safePlay(el){ if (!el) return; var p = el.play(); if (p && p.catch) p.catch(function(){}); }
+
+  var bhLooping = false;   // has the black hole cue been armed (blast happened)?
+
+  function startBlackholeSound(){
+    bhLooping = true;
+    if (!soundOn || !bhAudio) return;
+    bhAudio.volume = BH_VOL;
+    safePlay(bhAudio);
+    if (soundOn && bgAudio && !bgAudio.paused) rampVol(bgAudio, BG_VOL_DUCK, 400);  // duck the bed
+  }
+
+  function applySound(){
+    if (soundToggle){
+      soundToggle.setAttribute("aria-pressed", soundOn ? "true" : "false");   // state for AT
+      var txt = soundToggle.querySelector(".st-txt");
+      if (txt) txt.textContent = soundOn ? "Sound On" : "Sound Off";          // visible state
+    }
+    if (soundOn){
+      if (bgAudio){
+        bgAudio.volume = bhLooping ? BG_VOL_DUCK : BG_VOL;
+        safePlay(bgAudio);
+      }
+      if (bhLooping && bhAudio){ bhAudio.volume = BH_VOL; safePlay(bhAudio); }
+    } else {
+      if (bgAudio) bgAudio.pause();      // paused, not muted
+      if (bhAudio) bhAudio.pause();
+    }
+  }
+  if (soundToggle) soundToggle.addEventListener("click", function(){
+    soundOn = !soundOn;
+    applySound();
+  });
+
+  /* ============================================================
+     RESIZE — rAF-throttled for the cheap updates, trailing-debounced
+     for the expensive rebuild (star field / node relaxation)
+     ============================================================ */
+  var rzRaf = 0, rzT = 0;
+  function onResize(){
+    if (!rzRaf){
+      rzRaf = requestAnimationFrame(function(){
+        rzRaf = 0;
+        measureName();
+        if (!readout.hidden && readoutNode) positionReadout(readoutNode);
+        if (!factpop.hidden && factTrigger) placePopover(factpop, factTrigger.getBoundingClientRect());
+      });
+    }
+    clearTimeout(rzT);
+    rzT = setTimeout(function(){
+      sizeLinks();
+      layoutNodes();
+      drawLinks();
+      sizeBg();
+      measureName();
+      if (REDUCED) renderBg(performance.now(), 0.68);
+    }, 160);
+  }
+  window.addEventListener("resize", onResize, { passive: true });
+  window.addEventListener("orientationchange", onResize, { passive: true });
+
+  /* ============================================================
+     SPACE BACKGROUND
+     nebula starfield · shooting stars · scroll-zoom solar system
+     · click shockwaves / solar flare
+     ============================================================ */
+  var bg = document.getElementById("bg");
+  var bctx = bg.getContext("2d");
+  var flareHint = document.getElementById("flareHint");
+  var bw = 0, bh = 0, minDim = 0, bgDpr = 1;
+  var stars = [];
+  var gridLayer = document.createElement("canvas");
+  var glctx = gridLayer.getContext("2d");
+  var bgStart = performance.now();
+  var bgRaf = null;
+
+  // --- solar system model (world units, Sun at origin) ---
+  // wr = body radius, in Earth radii (TRUE relative sizes: Jupiter ~11x Earth,
+  //      Saturn ~9x, the ice giants ~4x, the rocky planets a fraction of Earth).
+  // r  = orbital radius — deliberately NOT to the same scale. True AU spacing
+  //      alongside true size ratios is unviewable on one screen, so the orbits
+  //      are compressed artistically while the size ratios stay honest.
+  // The Sun's true radius is ~109 Earth radii; shown here compressed to ~2.3x
+  //      Jupiter so it still reads as far larger than everything without
+  //      swallowing the frame. Inner orbits are set to clear the Sun's disc.
+  var ER = 1.6;                 // screen weight of one Earth radius
+  var SUN_WR = 40;
+  var PLANETS = [
+    { r:96,  wr:0.383*ER, col:"#b7b0a4", spin:1.30 },                 // Mercury
+    { r:118, wr:0.950*ER, col:"#d9b98a", spin:0.95 },                 // Venus
+    { r:142, wr:1.000*ER, col:"#5aa9e6", spin:0.80, moon:true },      // Earth
+    { r:165, wr:0.532*ER, col:"#d9764a", spin:0.62 },                 // Mars
+    { r:235, wr:10.97*ER, col:"#d7a978", spin:0.33 },                 // Jupiter
+    { r:300, wr:9.14*ER,  col:"#e3cfa0", spin:0.24, ring:true },      // Saturn
+    { r:355, wr:3.98*ER,  col:"#a6dbe6", spin:0.16 },                 // Uranus
+    { r:400, wr:3.86*ER,  col:"#6f8ff0", spin:0.12 }                  // Neptune
+  ];
+  var NEPTUNE_R = PLANETS[PLANETS.length - 1].r;
+  PLANETS.forEach(function(p, i){ p.a0 = rnd(i * 12.9 + 4.1) * Math.PI * 2; });
+
+  var shockwaves = [];
+  var shoot = null, shootT = 2600;
+  var sunFlash = 0;
+  var sunScreen = { x:0, y:0, r:0 };
+
+  // Cache the name's document-space geometry so the render loop never calls
+  // getBoundingClientRect(); the live viewport position is derived from scrollY.
+  var nameGeo = { top: 0, left: 0, w: 0, h: 0 };
+  function measureName(){
+    var r = nameBtn.getBoundingClientRect();
+    nameGeo.top = r.top + (window.pageYOffset || 0);
+    nameGeo.left = r.left;
+    nameGeo.w = r.width;
+    nameGeo.h = r.height;
+  }
+  measureName();
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(measureName);
+  }
+
+  function scrollProg(){
+    var vh = bh || window.innerHeight;
+    // spread the zoom-out over more scroll so the view stays comfortably
+    // zoomed-in (planets clickable) for longer before pulling back
+    return Math.min(1, Math.max(0, (window.pageYOffset || 0) / (vh * 2.1)));
+  }
+  function easeInOut(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2; }
+  function hexA(hex, a){
+    var n = parseInt(hex.slice(1), 16);
+    return "rgba(" + ((n>>16)&255) + "," + ((n>>8)&255) + "," + (n&255) + "," + a + ")";
+  }
+
+  /* ============================================================
+     SUN COLLAPSE  →  CONSUME  →  BLAST  →  PERMANENT NEGATIVE GRADE
+     Everything is drawn on the one existing #bg canvas inside the
+     renderBg loop — no per-element DOM animation for the sequence,
+     no listeners left running afterwards. Not reversible (reload only).
+     ============================================================ */
+  var EGG_DUR = 2600;   // ms of choreography (non-reduced-motion)
+  var TAU = Math.PI * 2;
+  function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  function sunActivated(x, y){
+    if (EGG.state !== "idle") return;            // once charging/collapsed, taps do nothing
+    if (!REDUCED){
+      shockwaves.push({ x:x, y:y, born: performance.now() - bgStart, flare:true });
+      if (shockwaves.length > 8) shockwaves.shift();
+      sunFlash = 1;
+    }
+    if (flareHint) flareHint.classList.add("spent");
+    EGG.clicks++;
+    updateSunCounter();
+    if (EGG.clicks >= 100) triggerCollapse();
+  }
+
+  function triggerCollapse(){
+    if (EGG.state !== "idle") return;
+    EGG.t0 = performance.now() - bgStart;
+    EGG.holeX = sunScreen.x;                     // freeze the hole in viewport space
+    EGG.holeY = sunScreen.y;
+    EGG.holeR = sunScreen.r;
+    EGG.didInvert = false;
+    if (sunCounterEl) sunCounterEl.hidden = true;
+    if (REDUCED){
+      // reduced motion: no choreography — cross-fade straight to the end state,
+      // and arm the looping black hole cue right away (no blast frame to hook)
+      EGG.state = "inverted";
+      EGG.blastFired = true;
+      startBlackholeSound();
+      eggFadePulse(function(){ finishInvert(); showEggPopup(); renderBg(performance.now(), 0.68); });
+    } else {
+      EGG.state = "collapsing";
+    }
+  }
+
+  function finishInvert(){
+    document.body.classList.add("inverted");     // single-element filter; ~.8s CSS transition
+    if (sunHitBtn) sunHitBtn.disabled = true;    // inert + out of the tab order now
+  }
+
+  function showEggPopup(){
+    if (!eggPopup) return;
+    if (sunCounterEl) sunCounterEl.hidden = true;
+    var hr = Math.max(10, EGG.holeR * 0.16);
+    placePopover(eggPopup, {
+      left: EGG.holeX - hr, right: EGG.holeX + hr,
+      top: EGG.holeY - hr, height: hr * 2
+    });
+    emergeOrigin(eggPopup, { left: EGG.holeX - hr, top: EGG.holeY - hr, width: hr * 2, height: hr * 2 });
+  }
+
+  // brief rAF opacity veil — the reduced-motion cross-fade (self-terminating)
+  function eggFadePulse(atPeak){
+    var el = document.getElementById("eggfade");
+    if (!el){ if (atPeak) atPeak(); return; }
+    var start = performance.now(), IN = 220, HOLD = 70, OUT = 360, done = false;
+    (function step(now){
+      var e = now - start;
+      if (e < IN){ el.style.opacity = (e / IN * 0.92).toFixed(3); requestAnimationFrame(step); }
+      else if (e < IN + HOLD){ el.style.opacity = "0.92"; if (!done){ done = true; if (atPeak) atPeak(); } requestAnimationFrame(step); }
+      else if (e < IN + HOLD + OUT){ el.style.opacity = (0.92 * (1 - (e - IN - HOLD) / OUT)).toFixed(3); requestAnimationFrame(step); }
+      else { el.style.opacity = "0"; }
+    })(start);
+  }
+
+  // the full canvas sequence — Sun implode, staggered planet consume, blast, steady hole
+  function drawCollapse(t, hx, hy, baseR){
+    var ek = EGG.state === "inverted" ? 1 : clamp01((t - EGG.t0) / EGG_DUR);
+    var P_IMPLODE = 0.14;
+    var P_CON0 = 0.16, CON_STAG = 0.052, CON_SPAN = 0.30;   // per-planet consume window
+    var P_BLAST0 = 0.84, P_BLAST1 = 0.96;                    // blast: after the last planet is gone
+    var P_INVERT = 0.90;                                     // negative grade begins mid-blast
+    var collapsing = EGG.state === "collapsing";
+
+    // --- planets + rings pulled in from the frozen snapshot (staggered spiral) ---
+    if (collapsing && eggSnap){
+      for (var i = 0; i < eggSnap.length; i++){
+        var o = eggSnap[i];
+        if (o.ring){
+          var rp = clamp01((ek - P_CON0) / 0.22);
+          if (rp >= 1) continue;
+          bctx.globalAlpha = (1 - rp) * 0.5;
+          bctx.strokeStyle = "rgba(150,190,215,0.6)"; bctx.lineWidth = 1;
+          bctx.beginPath(); bctx.arc(hx, hy, Math.max(0, o.r * (1 - rp)), 0, TAU); bctx.stroke();
+          bctx.globalAlpha = 1;
+          continue;
+        }
+        var cp = clamp01((ek - P_CON0 - (o.pidx || 0) * CON_STAG) / CON_SPAN);
+        if (cp >= 1) continue;                          // consumed
+        var dx0 = o.x - hx, dy0 = o.y - hy;
+        var dist = Math.sqrt(dx0 * dx0 + dy0 * dy0) * (1 - cp * cp);
+        var ang = Math.atan2(dy0, dx0) + cp * 2.6 * TAU;   // ~2.6 spiral turns inward
+        var x = hx + Math.cos(ang) * dist;
+        var y = hy + Math.sin(ang) * dist;
+        var r = Math.max(0.4, o.r * (1 - cp * 0.9));
+        var a = 1 - cp;
+        if (cp > 0.03){                                  // cheap trailing streak toward the hole
+          bctx.strokeStyle = hexA(o.col, 0.32 * a);
+          bctx.lineWidth = Math.max(1, r * 1.4); bctx.lineCap = "round";
+          bctx.beginPath(); bctx.moveTo(x, y);
+          bctx.lineTo(x + (hx - x) * 0.4, y + (hy - y) * 0.4); bctx.stroke();
+        }
+        bctx.globalAlpha = a;
+        bctx.fillStyle = o.col;
+        bctx.beginPath(); bctx.arc(x, y, r, 0, TAU); bctx.fill();
+        bctx.globalAlpha = 1;
+      }
+    }
+
+    // --- the Sun: brighten & swell, then implode (only in the first moments) ---
+    if (collapsing && ek < P_CON0 + 0.03){
+      if (ek < P_IMPLODE){
+        var g0 = ek / P_IMPLODE;
+        var sr = baseR * (1 + 0.5 * g0);
+        var cg = bctx.createRadialGradient(hx, hy, 0, hx, hy, sr * 2);
+        cg.addColorStop(0, "rgba(255,255,255," + (0.9 + 0.1 * g0).toFixed(3) + ")");
+        cg.addColorStop(0.4, "rgba(255,242,214,0.85)");
+        cg.addColorStop(1, "rgba(255,180,90,0)");
+        bctx.fillStyle = cg; bctx.beginPath(); bctx.arc(hx, hy, sr * 2, 0, TAU); bctx.fill();
+        bctx.fillStyle = "#fffef9"; bctx.beginPath(); bctx.arc(hx, hy, sr, 0, TAU); bctx.fill();
+      } else {
+        var im = (ek - P_IMPLODE) / ((P_CON0 + 0.03) - P_IMPLODE);
+        var isr = baseR * 1.5 * (1 - im) + 2 * im;
+        bctx.fillStyle = "rgba(255,255,255," + (1 - 0.3 * im).toFixed(3) + ")";
+        bctx.beginPath(); bctx.arc(hx, hy, Math.max(2, isr), 0, TAU); bctx.fill();
+        bctx.strokeStyle = "rgba(255,246,224," + (0.7 * (1 - im)).toFixed(3) + ")";
+        bctx.lineWidth = 2 + 8 * im;
+        bctx.beginPath(); bctx.arc(hx, hy, baseR * 1.5 * (1 + im * 1.8), 0, TAU); bctx.stroke();
+      }
+    }
+
+    // --- the black hole (present from the implode on, and forever after) ---
+    if (EGG.state === "inverted" || ek >= P_IMPLODE){
+      var hr2 = Math.max(9, baseR * 0.16);
+      var rot = REDUCED ? 0 : (t * 0.0011) % TAU;      // slow swirl (conic-gradient stand-in)
+      for (var s = 0; s < 4; s++){
+        bctx.strokeStyle = "rgba(150,190,255," + (0.16 - s * 0.033).toFixed(3) + ")";
+        bctx.lineWidth = Math.max(1, hr2 * 0.55 - s * 2);
+        bctx.beginPath();
+        bctx.arc(hx, hy, hr2 * (1.7 + s * 0.8), rot + s * 0.9, rot + s * 0.9 + Math.PI * 1.4);
+        bctx.stroke();
+      }
+      var rim = bctx.createRadialGradient(hx, hy, hr2 * 0.5, hx, hy, hr2 * 2.8);
+      rim.addColorStop(0, "rgba(0,0,0,0)");
+      rim.addColorStop(0.5, "rgba(90,140,220,0.10)");
+      rim.addColorStop(0.78, "rgba(170,120,255,0.14)");
+      rim.addColorStop(1, "rgba(0,0,0,0)");
+      bctx.fillStyle = rim; bctx.beginPath(); bctx.arc(hx, hy, hr2 * 2.8, 0, TAU); bctx.fill();
+      var hg = bctx.createRadialGradient(hx, hy, 0, hx, hy, hr2);
+      hg.addColorStop(0, "#000"); hg.addColorStop(0.85, "#04050a");
+      hg.addColorStop(1, "rgba(8,10,18,0.55)");
+      bctx.fillStyle = hg; bctx.beginPath(); bctx.arc(hx, hy, hr2, 0, TAU); bctx.fill();
+    }
+
+    // --- the blast: quick expanding flash once every planet is consumed ---
+    if (collapsing && ek >= P_BLAST0 && !EGG.blastFired){
+      EGG.blastFired = true;
+      startBlackholeSound();                 // begins the looping cue (silent if sound is off)
+    }
+    if (collapsing && ek >= P_BLAST0 && ek < P_BLAST1 + 0.05){
+      var bp = clamp01((ek - P_BLAST0) / (P_BLAST1 - P_BLAST0));
+      var br = (1 - Math.pow(1 - bp, 2)) * minDim * 0.72;
+      var ba = (1 - bp) * (1 - bp);
+      var fg = bctx.createRadialGradient(hx, hy, 0, hx, hy, br);
+      fg.addColorStop(0, "rgba(255,255,255," + (0.55 * ba).toFixed(3) + ")");
+      fg.addColorStop(0.55, "rgba(255,226,180," + (0.22 * ba).toFixed(3) + ")");
+      fg.addColorStop(1, "rgba(255,226,180,0)");
+      bctx.fillStyle = fg; bctx.beginPath(); bctx.arc(hx, hy, br, 0, TAU); bctx.fill();
+      bctx.strokeStyle = "rgba(255,252,240," + (0.9 * ba).toFixed(3) + ")";
+      bctx.lineWidth = (1 - bp) * 9 + 1;
+      bctx.beginPath(); bctx.arc(hx, hy, br, 0, TAU); bctx.stroke();
+    }
+
+    // --- state transitions ---
+    if (collapsing){
+      if (!EGG.didInvert && ek >= P_INVERT){
+        EGG.didInvert = true;
+        finishInvert();
+        showEggPopup();
+      }
+      if (ek >= 1) EGG.state = "inverted";
+    }
+  }
+
+  function sizeBg(){
+    bw = window.innerWidth; bh = window.innerHeight;
+    minDim = Math.min(bw, bh);
+    bgDpr = MID() ? 1 : DPR;
+    bg.width = bw * bgDpr; bg.height = bh * bgDpr;
+    bctx.setTransform(bgDpr, 0, 0, bgDpr, 0, 0);
+
+    // faint "ground station" grid — fades out as the camera climbs into space
+    gridLayer.width = bw * bgDpr; gridLayer.height = bh * bgDpr;
+    glctx.setTransform(bgDpr, 0, 0, bgDpr, 0, 0);
+    glctx.clearRect(0, 0, bw, bh);
+    glctx.strokeStyle = "rgba(120,170,175,0.05)";
+    glctx.lineWidth = 1;
+    var hy0 = bh * 0.82;
+    for (var gx = -bw; gx <= bw * 2; gx += 70){
+      glctx.beginPath();
+      glctx.moveTo(bw / 2 + (gx - bw / 2) * 0.34, hy0);
+      glctx.lineTo(gx, bh); glctx.stroke();
+    }
+    for (var gy = hy0, st = 10; gy < bh; gy += st, st *= 1.34){
+      glctx.beginPath(); glctx.moveTo(0, gy); glctx.lineTo(bw, gy); glctx.stroke();
+    }
+
+    // fewer stars on small screens — a real count reduction, not just smaller dots
+    var count = Math.round((bw * bh) / (MID() ? 34000 : 13000));
+    count = Math.max(36, Math.min(MID() ? 80 : 220, count));
+    var pal = ["255,255,255", "202,222,255", "255,224,178", "180,240,235"];
+    stars = [];
+    for (var i = 0; i < count; i++){
+      stars.push({
+        x: Math.random() * bw, y: Math.random() * bh,
+        z: Math.random() * 0.85 + 0.15,
+        tw: Math.random() * Math.PI * 2,
+        sp: 0.5 + Math.random() * 1.5,
+        c: pal[ Math.random() < 0.8 ? (Math.random() * 2 | 0) : (2 + (Math.random() * 2 | 0)) ]
+      });
+    }
+  }
+
+  function drawStars(t){
+    var par = (window.pageYOffset || 0) * 0.025;
+    for (var i = 0; i < stars.length; i++){
+      var s = stars[i];
+      if (!REDUCED){ s.y += s.z * 0.11; if (s.y > bh + 2){ s.y = -2; s.x = Math.random() * bw; } }
+      var yy = s.y - (par * s.z) % (bh + 40);
+      if (yy < -20) yy += bh + 40;
+      var a = REDUCED ? (0.22 + s.z * 0.4)
+                      : (0.15 + 0.55 * s.z * (0.55 + 0.45 * Math.sin(t * 0.001 * s.sp + s.tw)));
+      bctx.fillStyle = "rgba(" + s.c + "," + a.toFixed(3) + ")";
+      var sz = s.z * 1.7;
+      bctx.fillRect(s.x, yy, sz, sz);
+    }
+  }
+
+  function drawSolarSystem(t, pe){
+    // zoomed-in resting view; pulls back (but not as far as before) on scroll
+    var scaleMax = (minDim * 0.155) / SUN_WR;
+    var scaleMin = (minDim * (SMALL() ? 0.46 : 0.52)) / NEPTUNE_R;
+    var scale = scaleMax * Math.pow(scaleMin / scaleMax, pe);
+
+    // system (planets + orbits) fades in as the camera starts pulling back
+    var sysA = Math.min(1, Math.max(0, (pe - 0.05) / 0.30));
+    sysA = sysA * sysA * (3 - 2 * sysA);
+
+    var ax = bw * 0.32, ay = bh * 0.46;
+    if (nameGeo.w){
+      var nbTop = nameGeo.top - (window.pageYOffset || 0);   // live viewport y, no layout read
+      ax = nameGeo.left + nameGeo.w * (SMALL() ? 0.5 : 0.6);
+      ay = Math.max(bh * 0.06, Math.min(bh * 0.94, nbTop + nameGeo.h * 0.62));
+    }
+    ax = Math.max(bw * 0.18, Math.min(bw * 0.82, ax));   // keep the larger sun on screen
+    var tx = bw * (SMALL() ? 0.5 : 0.58), ty = bh * (SMALL() ? 0.3 : 0.4);
+    var cx = ax + (tx - ax) * pe;
+    var cy = ay + (ty - ay) * pe;
+
+    var glow = !MID();
+
+    var sunR = Math.max(3, SUN_WR * scale);
+    sunScreen.x = cx; sunScreen.y = cy; sunScreen.r = sunR;
+    if (sunHitBtn && EGG.state === "idle"){
+      sunHitBtn.style.transform =
+        "translate3d(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px,0) translate(-50%,-50%)";
+    }
+    if (sunCounterEl && EGG.state === "idle"){
+      // counter is position:absolute inside #invertwrap → place it in DOCUMENT space
+      // (viewport y + scrollY) so it tracks the Sun yet scrolls with the page
+      var ccx = Math.max(6, Math.min(bw - 128, cx + sunR * 0.72 + 6));
+      var ccy = Math.max(56, cy - sunR * 0.72 - 6) + (window.pageYOffset || 0);
+      sunCounterEl.style.transform = "translate3d(" + ccx.toFixed(1) + "px," + ccy.toFixed(1) + "px,0)";
+      if (sunCounterEl.hidden) sunCounterEl.hidden = false;
+    }
+
+    // Sun easter egg: collapse → consume → blast → permanent inverted end state
+    if (EGG.state !== "idle"){
+      drawCollapse(t, EGG.holeX, EGG.holeY, EGG.holeR);
+      for (var eb = 0; eb < planetBtns.length; eb++){
+        if (planetBtns[eb]._vis){ planetBtns[eb].hidden = true; planetBtns[eb]._vis = false; }
+      }
+      bctx.globalAlpha = 1;
+      return;
+    }
+
+    // freeze planet/ring screen geometry as the 100th tap approaches,
+    // so the consume has real positions to pull from (no cost until then)
+    var snap = EGG.clicks >= 90 ? [] : null;
+
+    // orbit rings
+    if (sysA > 0.01){
+      bctx.globalAlpha = sysA;
+      for (var i = 0; i < PLANETS.length; i++){
+        var rr = PLANETS[i].r * scale;
+        if (rr < 8 || rr > minDim * 2.6) continue;
+        bctx.strokeStyle = "rgba(150,190,215," + (0.05 + 0.05 * (1 - pe)).toFixed(3) + ")";
+        bctx.lineWidth = 1;
+        bctx.beginPath(); bctx.arc(cx, cy, rr, 0, Math.PI * 2); bctx.stroke();
+        if (snap) snap.push({ x: cx, y: cy, r: rr, ring: true });
+      }
+      bctx.globalAlpha = 1;
+    }
+
+    // sun
+    var pulse = 1 + 0.04 * Math.sin(t * 0.0016) + sunFlash * 0.18;
+    var glowR = sunR * (2.2 + sunFlash * 0.8) * pulse;
+    var g = bctx.createRadialGradient(cx, cy, sunR * 0.2, cx, cy, glowR);
+    g.addColorStop(0.00, "rgba(255,249,238,0.92)");
+    g.addColorStop(0.12, "rgba(255,216,155," + (0.66 + sunFlash * 0.18).toFixed(3) + ")");
+    g.addColorStop(0.32, "rgba(255,165,74," + (0.30 + sunFlash * 0.22).toFixed(3) + ")");
+    g.addColorStop(0.68, "rgba(255,120,50,0.07)");
+    g.addColorStop(1, "rgba(255,120,50,0)");
+    bctx.fillStyle = g;
+    bctx.beginPath(); bctx.arc(cx, cy, glowR, 0, Math.PI * 2); bctx.fill();
+
+    var cg = bctx.createRadialGradient(cx - sunR * 0.28, cy - sunR * 0.28, sunR * 0.08, cx, cy, sunR);
+    cg.addColorStop(0, "#fffdf6");
+    cg.addColorStop(0.45, "#ffe6b4");
+    cg.addColorStop(1, "#ffab4e");
+    bctx.fillStyle = cg;
+    bctx.beginPath(); bctx.arc(cx, cy, sunR, 0, Math.PI * 2); bctx.fill();
+
+    // planet hit-targets are only live once the system is clearly visible
+    var hitsLive = sysA > 0.15;
+    if (!hitsLive){
+      for (var hb = 0; hb < planetBtns.length; hb++){
+        var pbh = planetBtns[hb];
+        if (pbh._vis){ pbh.hidden = true; pbh._vis = false; }
+      }
+    }
+    if (sysA <= 0.01){ bctx.globalAlpha = 1; return; }
+
+    // planets
+    bctx.globalAlpha = sysA;
+    for (var j = 0; j < PLANETS.length; j++){
+      var p = PLANETS[j];
+      var vis = false;
+      var orbR = p.r * scale;
+      if (orbR <= minDim * 2.7){
+        var ang = p.a0 + (REDUCED ? 0 : t * 0.00013 * p.spin);
+        var px = cx + Math.cos(ang) * orbR;
+        var py = cy + Math.sin(ang) * orbR * 0.985;
+        if (!(px < -70 || px > bw + 70 || py < -70 || py > bh + 70)){
+          var pr = Math.max(1.1, Math.min(180, p.wr * scale));
+
+          if (glow && pr > 1.5){
+            var pgl = bctx.createRadialGradient(px, py, 0, px, py, pr * 3.2);
+            pgl.addColorStop(0, hexA(p.col, 0.45));
+            pgl.addColorStop(1, hexA(p.col, 0));
+            bctx.fillStyle = pgl;
+            bctx.beginPath(); bctx.arc(px, py, pr * 3.2, 0, Math.PI * 2); bctx.fill();
+          }
+          bctx.fillStyle = p.col;
+          bctx.beginPath(); bctx.arc(px, py, pr, 0, Math.PI * 2); bctx.fill();
+
+          if (p.ring && pr > 2.2){
+            bctx.strokeStyle = hexA("#e6d5a8", 0.5);
+            bctx.lineWidth = Math.max(1, pr * 0.26);
+            bctx.beginPath();
+            bctx.ellipse(px, py, pr * 2.15, pr * 0.8, ang * 0.4, 0, Math.PI * 2);
+            bctx.stroke();
+          }
+          if (p.moon && pr > 1.6){
+            var ma = ang * 5.2;
+            bctx.fillStyle = "#cbd2d8";
+            bctx.beginPath();
+            bctx.arc(px + Math.cos(ma) * pr * 2.6, py + Math.sin(ma) * pr * 2.6,
+                     Math.max(0.8, pr * 0.32), 0, Math.PI * 2);
+            bctx.fill();
+          }
+
+          if (hitsLive){
+            // compositor-only: only the translate changes frame to frame
+            planetBtns[j].style.transform =
+              "translate3d(" + px.toFixed(1) + "px," + py.toFixed(1) + "px,0) translate(-50%,-50%)";
+            vis = true;
+          }
+          if (snap) snap.push({ x: px, y: py, r: pr, col: p.col, pidx: j });
+        }
+      }
+      var pb = planetBtns[j];
+      if (pb._vis !== vis){ pb.hidden = !vis; pb._vis = vis; }
+    }
+    bctx.globalAlpha = 1;
+    if (snap) eggSnap = snap;
+  }
+
+  function drawShooting(t){
+    if (REDUCED) return;
+    if (!shoot && t > shootT){
+      var top = Math.random() < 0.62;
+      var dir = 0.17 + Math.random() * 0.5;
+      var sp = (bw + bh) / 240 * (0.9 + Math.random() * 0.7);
+      shoot = {
+        x: top ? Math.random() * bw * 0.7 : -40,
+        y: top ? -40 : Math.random() * bh * 0.45,
+        vx: Math.cos(dir) * sp, vy: Math.sin(dir) * sp,
+        life: 0, max: 620 + Math.random() * 640
+      };
+    }
+    if (!shoot) return;
+    shoot.life += 16;
+    shoot.x += shoot.vx; shoot.y += shoot.vy;
+    var lp = shoot.life / shoot.max;
+    var fade = Math.max(0, Math.min(1, lp < 0.16 ? lp / 0.16 : (1 - lp) / 0.84));
+    var tx = shoot.x - shoot.vx * 9, ty = shoot.y - shoot.vy * 9;
+    var lg = bctx.createLinearGradient(tx, ty, shoot.x, shoot.y);
+    lg.addColorStop(0, "rgba(190,225,255,0)");
+    lg.addColorStop(1, "rgba(235,247,255," + (0.9 * fade).toFixed(3) + ")");
+    bctx.strokeStyle = lg;
+    bctx.lineWidth = 2; bctx.lineCap = "round";
+    bctx.beginPath(); bctx.moveTo(tx, ty); bctx.lineTo(shoot.x, shoot.y); bctx.stroke();
+    bctx.fillStyle = "rgba(255,255,255," + fade.toFixed(3) + ")";
+    bctx.beginPath(); bctx.arc(shoot.x, shoot.y, 1.8, 0, Math.PI * 2); bctx.fill();
+    if (lp >= 1 || shoot.x > bw + 90 || shoot.y > bh + 90){
+      shoot = null;
+      shootT = t + (MID() ? 9000 : 3800) + Math.random() * (MID() ? 12000 : 7500);
+    }
+  }
+
+  function drawShockwaves(t){
+    for (var i = shockwaves.length - 1; i >= 0; i--){
+      var w = shockwaves[i];
+      var age = t - w.born;
+      var dur = w.flare ? 1150 : 780;
+      if (age > dur){ shockwaves.splice(i, 1); continue; }
+      var k = age / dur;
+      var rings = w.flare ? 3 : 2;
+      for (var r = 0; r < rings; r++){
+        var kk = k - r * 0.13;
+        if (kk <= 0) continue;
+        var rad = kk * (w.flare ? minDim * 0.55 : minDim * 0.3);
+        var al = (1 - kk) * (w.flare ? 0.5 : 0.3);
+        bctx.strokeStyle = (w.flare ? "rgba(255,190,120," : "rgba(47,227,196,") + al.toFixed(3) + ")";
+        bctx.lineWidth = w.flare ? 2.4 : 1.6;
+        bctx.beginPath(); bctx.arc(w.x, w.y, rad, 0, Math.PI * 2); bctx.stroke();
+      }
+    }
+  }
+
+  function renderBg(now, forceProg){
+    var t = now - bgStart;
+    var pe = easeInOut(forceProg != null ? forceProg : scrollProg());
+    try {
+      bctx.clearRect(0, 0, bw, bh);
+      if (pe < 0.98){
+        bctx.globalAlpha = 1 - pe;
+        bctx.drawImage(gridLayer, 0, 0, bw, bh);
+        bctx.globalAlpha = 1;
+      }
+      drawStars(t);
+      drawSolarSystem(t, pe);
+      drawShooting(t);
+      drawShockwaves(t);
+    } catch (err) { /* keep the loop alive through a bad frame */ }
+
+    if (sunFlash > 0) sunFlash = Math.max(0, sunFlash - 0.03);
+    if (!REDUCED) bgRaf = requestAnimationFrame(renderBg);
+  }
+
+  sizeBg();
+  if (REDUCED){
+    renderBg(performance.now(), 0.68);
+  } else {
+    bgRaf = requestAnimationFrame(renderBg);
+    // click anywhere on the space / the name -> shockwave; on the sun -> flare + tap count
+    window.addEventListener("click", function(e){
+      if (activeOverlay) return;
+      var onName = !!(e.target.closest && e.target.closest("#nameBtn"));
+      var onUI = !!(e.target.closest && e.target.closest(
+        "header, footer, .overlay, .readout, .factpop, .egg-popup, .spacefact, .planet-hit, .tl-marker, .node, a, button"));
+      if (onUI && !onName) return;
+      var d = Math.sqrt(Math.pow(e.clientX - sunScreen.x, 2) + Math.pow(e.clientY - sunScreen.y, 2));
+      if (d < Math.max(56, sunScreen.r * 1.05)){
+        sunActivated(e.clientX, e.clientY);   // Sun: flare + visible 100-tap counter
+        return;
+      }
+      shockwaves.push({ x: e.clientX, y: e.clientY, born: performance.now() - bgStart, flare: false });
+      if (shockwaves.length > 8) shockwaves.shift();
+      if (flareHint) flareHint.classList.add("spent");
+    }, { passive: true });
+    setTimeout(function(){ if (flareHint) flareHint.classList.add("spent"); }, 13000);
+  }
+  if (REDUCED && flareHint) flareHint.classList.add("spent");
+
+  /* ============================================================
+     PAUSE animation loops when the tab is hidden (perf)
+     ============================================================ */
+  document.addEventListener("visibilitychange", function(){
+    if (document.hidden){
+      if (bgRaf){ cancelAnimationFrame(bgRaf); bgRaf = null; }
+    } else {
+      if (!REDUCED && !bgRaf) bgRaf = requestAnimationFrame(renderBg);
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
