@@ -1,0 +1,5 @@
+# nothing here needs building or installing — keep the repo to the site files only
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
