@@ -3,3 +3,7 @@
 Thumbs.db
 *.log
 node_modules/
+
+# local-only helper scripts (not part of the site)
+deploy.cmd
+
