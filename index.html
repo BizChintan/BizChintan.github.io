@@ -573,29 +573,34 @@
   .planet-hits{ position:absolute; top:0; left:0; z-index:1; }
   .spacefacts .spacefact, .planet-hits .planet-hit{ pointer-events:auto; }
 
-  /* small textless asteroids — varied size/shape, JS-driven drift (shared renderBg loop) */
+  /* small textless asteroids — red-outlined rocks, varied size/shape; JS-driven drift */
   .spacefact{
     position:fixed; left:0; top:0; margin:0; padding:9px;   /* padding = a comfortable tap target around a tiny rock */
     border:0; background:none; cursor:pointer;
     font-size:0; line-height:0; will-change:transform;
     -webkit-tap-highlight-color:transparent;
   }
-  .spacefact::before{
+  .spacefact::before, .spacefact::after{
     content:""; display:block;
-    width:var(--sf-size,16px); height:var(--sf-size,16px);
+    width:var(--sf-size,13px); height:var(--sf-size,13px);
     clip-path:var(--sf-shape, polygon(50% 2%,82% 14%,98% 46%,88% 82%,54% 99%,20% 90%,3% 58%,10% 22%));
-    background:radial-gradient(circle at 33% 27%, #74747d, #45454d 52%, #2a2a30 100%);
-    box-shadow:inset 0 0 4px rgba(0,0,0,0.65);
-    filter:drop-shadow(0 0 0.6px var(--danger)) drop-shadow(0 0 3px rgba(255,92,92,0.45));
+  }
+  .spacefact::before{                        /* red outline layer */
+    background:var(--danger);
+    filter:drop-shadow(0 0 3px rgba(255,92,92,0.5));
     transition:filter .2s var(--ease);
   }
-  .spacefact:hover::before, .spacefact:focus-visible::before{
-    filter:drop-shadow(0 0 1px var(--danger)) drop-shadow(0 0 7px rgba(255,92,92,0.9)) brightness(1.25);
+  .spacefact::after{                         /* the rock, inset so the red reads as an outline */
+    position:absolute; left:9px; top:9px;
+    background:radial-gradient(circle at 33% 27%, #74747d, #45454d 52%, #2a2a30 100%);
+    box-shadow:inset 0 0 4px rgba(0,0,0,0.65);
+    transform:scale(0.72);
+  }
+  .spacefact:hover::before, .spacefact:focus-visible::before,
+  .spacefact[aria-expanded="true"]::before{
+    filter:drop-shadow(0 0 7px rgba(255,92,92,0.95)) brightness(1.15);
   }
   .spacefact:focus-visible{ outline:none; }
-  .spacefact[aria-expanded="true"]::before{
-    filter:drop-shadow(0 0 1.5px var(--danger)) drop-shadow(0 0 8px rgba(255,92,92,1)) brightness(1.3);
-  }
 
   /* a small name-tag that rides along with each planet; click -> fact popover */
   .planet-hit{
@@ -2538,6 +2543,7 @@
   var factpopText  = document.getElementById("factpopText");
   var factpopClose = document.getElementById("factpopClose");
   var factTrigger  = null;
+  var factPopW = 0, factPopH = 0;   // cached popover size — for the per-frame chip follow
 
   function placePopover(pop, anchor){
     pop.style.visibility = "hidden";
@@ -2568,6 +2574,8 @@
     var anchor = triggerEl ? triggerEl.getBoundingClientRect()
       : { left:window.innerWidth/2, right:window.innerWidth/2, top:window.innerHeight/2, height:0 };
     placePopover(factpop, anchor);
+    var fr = factpop.getBoundingClientRect();
+    factPopW = fr.width; factPopH = fr.height;
     emergeOrigin(factpop, {                             // grow out of the tapped label / planet
       left: anchor.left, top: anchor.top,
       width: (anchor.right - anchor.left) || 0, height: anchor.height || 0
@@ -2580,6 +2588,7 @@
   function closeFact(returnFocus){
     if (factpop.hidden) return;
     factpop.hidden = true;
+    factPopW = 0;
     if (factTrigger){
       factTrigger.setAttribute("aria-expanded", "false");
       if (returnFocus && factTrigger.focus) try { factTrigger.focus({ preventScroll: true }); } catch (e){ factTrigger.focus(); }
@@ -2616,7 +2625,7 @@
     b.setAttribute("aria-haspopup", "dialog");
     b.setAttribute("aria-expanded", "false");
     b.setAttribute("aria-label", f.label + " — reveal a space fact");   // no visible text
-    b.style.setProperty("--sf-size", (10 + Math.round(rnd(i * 6.1 + 5) * 15)) + "px");   // 10–25 px
+    b.style.setProperty("--sf-size", (7 + Math.round(rnd(i * 6.1 + 5) * 9)) + "px");   // 7–16 px
     b.style.setProperty("--sf-shape", SF_SHAPES[Math.floor(rnd(i * 8.3 + 9) * SF_SHAPES.length) % SF_SHAPES.length]);
     b.addEventListener("click", function(){ openFact(f.label, f.text, b); });
     factLayer.appendChild(b);
@@ -2674,6 +2683,31 @@
       else if (s.y >= H - s.h){ s.y = H - s.h; s.vy = -Math.abs(s.vy); }
       b.style.transform = sfTransform(s);
     }
+  }
+  // keep the open fact popover glued to its asteroid as it drifts (called each frame)
+  function followFactChip(){
+    if (factpop.hidden || !factTrigger || !factTrigger._sf) return;
+    var s = factTrigger._sf;
+    if (!factPopW){
+      var fr = factpop.getBoundingClientRect();
+      factPopW = fr.width; factPopH = fr.height;
+      if (!factPopW) return;
+    }
+    var m = 12, sz = s.w || 16;
+    var ax = s.x + 9, ay = s.y + 9;                 // asteroid box top-left on screen (9 = .spacefact padding)
+    var left, top;
+    if (SMALL()){
+      left = (window.innerWidth - factPopW) / 2;
+      top  = window.innerHeight - factPopH - m;
+    } else {
+      left = ax + sz + m;                            // prefer to the right of the rock
+      if (left + factPopW > window.innerWidth - m) left = ax - m - factPopW;   // else to the left
+      left = Math.max(m, Math.min(window.innerWidth  - m - factPopW, left));
+      top  = ay + sz / 2 - factPopH / 2;
+      top  = Math.max(m, Math.min(window.innerHeight - m - factPopH, top));
+    }
+    factpop.style.left = Math.round(left) + "px";
+    factpop.style.top  = Math.round(top) + "px";
   }
   if (!REDUCED) requestAnimationFrame(layoutSpaceFacts);   // measure once laid out
 
@@ -2785,7 +2819,7 @@
         rzRaf = 0;
         measureName();
         if (!readout.hidden && readoutNode) positionReadout(readoutNode);
-        if (!factpop.hidden && factTrigger) placePopover(factpop, factTrigger.getBoundingClientRect());
+        if (!factpop.hidden && factTrigger){ factPopW = 0; placePopover(factpop, factTrigger.getBoundingClientRect()); }
       });
     }
     clearTimeout(rzT);
@@ -3678,6 +3712,7 @@
     try {
       bctx.clearRect(0, 0, bw, bh);
       stepSpaceFacts(dt);
+      followFactChip();
       if (pe < 0.98){
         bctx.globalAlpha = 1 - pe;
         bctx.drawImage(gridLayer, 0, 0, bw, bh);
