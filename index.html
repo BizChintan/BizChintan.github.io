@@ -1525,6 +1525,48 @@
     docEl.style.scrollBehavior = sb;
   }
 
+  /* ---------- phone Back button dismisses an open popup, not the whole site ----------
+     While any detail panel / popover is open we park one extra history entry; a Back
+     press then just pops that entry and closes the popup. Sync work is deferred to a
+     microtask so mutually-exclusive popup swaps settle before we touch history. */
+  var _navParked = false, _navUnwinding = false, _navQueued = false;
+
+  function popupOpen(){
+    return !!activeOverlay
+        || (readout && !readout.hidden)
+        || (factpop && !factpop.hidden);
+  }
+  function navSync(){
+    if (_navQueued) return;
+    _navQueued = true;
+    Promise.resolve().then(function(){
+      _navQueued = false;
+      if (_navUnwinding) return;
+      var open = popupOpen();
+      try {
+        if (open && !_navParked){
+          _navParked = true;
+          history.pushState({ pfPopup: 1 }, "");
+        } else if (!open && _navParked){
+          _navUnwinding = true;
+          history.back();
+        }
+      } catch (e){ _navParked = open; _navUnwinding = false; }
+    });
+  }
+  window.addEventListener("popstate", function(){
+    if (_navUnwinding){            // our own history.back() from navSync — entry already gone
+      _navUnwinding = false;
+      _navParked = false;
+      return;
+    }
+    if (!_navParked) return;       // a Back press we didn't park for — let it navigate away
+    _navParked = false;            // consume the entry we parked
+    if (activeOverlay) closeOverlay(activeOverlay);
+    if (readout && !readout.hidden) closeReadout(true);
+    if (factpop && !factpop.hidden) closeFact(true);
+  });
+
   /* ---------- scroll-reactive top UI ----------
      - #scrollbar: red progress line, grows left -> right (replaces the native bar)
      - #nameBar : frozen name column that slides in once the hero name scrolls
@@ -1890,6 +1932,7 @@
     var f = initialFocus || focusables(overlay)[0];
     if (f) f.focus();
     document.addEventListener("keydown", onModalKey, true);
+    navSync();
   }
 
   function closeOverlay(overlay){
@@ -1905,6 +1948,7 @@
     }, REDUCED ? 0 : 170);
     activeOverlay = null;
     unlockScroll();
+    navSync();
     document.removeEventListener("keydown", onModalKey, true);
     if (lastFocused && lastFocused.focus) lastFocused.focus();
     // reset timeline markers
@@ -2391,6 +2435,7 @@
     roClose.focus();
     document.addEventListener("keydown", onReadoutKey, true);
     setTimeout(function(){ document.addEventListener("click", onReadoutOutside, true); }, 0);
+    navSync();
   }
 
   function closeReadout(returnFocus){
@@ -2403,6 +2448,7 @@
     }
     document.removeEventListener("keydown", onReadoutKey, true);
     document.removeEventListener("click", onReadoutOutside, true);
+    navSync();
   }
   function onReadoutKey(e){ if (e.key === "Escape"){ e.preventDefault(); closeReadout(true); } }
   function onReadoutOutside(e){
@@ -2486,6 +2532,7 @@
     factpopClose.focus();
     document.addEventListener("keydown", onFactKey, true);
     setTimeout(function(){ document.addEventListener("click", onFactOutside, true); }, 0);
+    navSync();
   }
   function closeFact(returnFocus){
     if (factpop.hidden) return;
@@ -2497,6 +2544,7 @@
     }
     document.removeEventListener("keydown", onFactKey, true);
     document.removeEventListener("click", onFactOutside, true);
+    navSync();
   }
   function onFactKey(e){ if (e.key === "Escape"){ e.preventDefault(); closeFact(true); } }
   function onFactOutside(e){
