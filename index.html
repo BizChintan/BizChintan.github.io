@@ -573,24 +573,29 @@
   .planet-hits{ position:absolute; top:0; left:0; z-index:1; }
   .spacefacts .spacefact, .planet-hits .planet-hit{ pointer-events:auto; }
 
-  /* asteroid-style fact chips — drift is JS-driven (one shared rAF loop in renderBg) */
+  /* small textless asteroids — varied size/shape, JS-driven drift (shared renderBg loop) */
   .spacefact{
-    position:fixed; left:0; top:0; margin:0; cursor:pointer;
-    padding:5px 9px; border:1px solid var(--danger); border-radius:2px;
-    background:rgba(8,11,18,0.62);
-    font-family:var(--font-mono); font-size:10px; letter-spacing:.2em;
-    text-transform:uppercase; color:#c7d2d2; white-space:nowrap;
-    opacity:.62; will-change:transform;
-    box-shadow:0 0 9px rgba(255,92,92,0.28), inset 0 0 0 1px rgba(255,92,92,0.06);
-    transition:opacity .25s var(--ease), color .25s var(--ease), box-shadow .25s var(--ease);
+    position:fixed; left:0; top:0; margin:0; padding:9px;   /* padding = a comfortable tap target around a tiny rock */
+    border:0; background:none; cursor:pointer;
+    font-size:0; line-height:0; will-change:transform;
+    -webkit-tap-highlight-color:transparent;
   }
-  .spacefact::before{ content:"✦ "; color:var(--danger); opacity:.85; }
-  .spacefact:hover, .spacefact:focus-visible{
-    opacity:1; color:#fff; outline:none;
-    box-shadow:0 0 14px rgba(255,92,92,0.55), inset 0 0 0 1px rgba(255,92,92,0.25);
+  .spacefact::before{
+    content:""; display:block;
+    width:var(--sf-size,16px); height:var(--sf-size,16px);
+    clip-path:var(--sf-shape, polygon(50% 2%,82% 14%,98% 46%,88% 82%,54% 99%,20% 90%,3% 58%,10% 22%));
+    background:radial-gradient(circle at 33% 27%, #74747d, #45454d 52%, #2a2a30 100%);
+    box-shadow:inset 0 0 4px rgba(0,0,0,0.65);
+    filter:drop-shadow(0 0 0.6px var(--danger)) drop-shadow(0 0 3px rgba(255,92,92,0.45));
+    transition:filter .2s var(--ease);
   }
-  .spacefact:focus-visible{ box-shadow:0 0 0 2px var(--danger), 0 0 14px rgba(255,92,92,0.5); }
-  .spacefact[aria-expanded="true"]{ opacity:1; color:#fff; border-color:#fff; }
+  .spacefact:hover::before, .spacefact:focus-visible::before{
+    filter:drop-shadow(0 0 1px var(--danger)) drop-shadow(0 0 7px rgba(255,92,92,0.9)) brightness(1.25);
+  }
+  .spacefact:focus-visible{ outline:none; }
+  .spacefact[aria-expanded="true"]::before{
+    filter:drop-shadow(0 0 1.5px var(--danger)) drop-shadow(0 0 8px rgba(255,92,92,1)) brightness(1.3);
+  }
 
   /* a small name-tag that rides along with each planet; click -> fact popover */
   .planet-hit{
@@ -639,7 +644,6 @@
   .factpop-text{ margin:0; padding:14px; font-size:13.5px; line-height:1.6; color:var(--ink-dim); }
 
   @media (max-width:640px){
-    .spacefact{ font-size:9px; letter-spacing:.16em; opacity:.6; padding:4px 7px; }
     .spacefact.sf-hide-sm{ display:none; }
     .planet-hit{ font-size:8px; letter-spacing:.08em; opacity:.32; padding:3px 5px; }
   }
@@ -2593,17 +2597,27 @@
   }
   factpopClose.addEventListener("click", function(){ closeFact(true); });
 
-  // --- build the fact chips — they drift like asteroids, driven from renderBg ---
+  // --- build the fact asteroids — small, textless, varied size/shape; drift from renderBg ---
   var factLayer = document.getElementById("spacefacts");
   var SF_PI2 = Math.PI * 2, SF_SPD_MIN = 10, SF_SPD_MAX = 24;   // px/s
+  // a handful of irregular rock silhouettes
+  var SF_SHAPES = [
+    "polygon(50% 2%,80% 10%,97% 40%,92% 74%,66% 97%,32% 92%,6% 66%,4% 32%,22% 10%)",
+    "polygon(46% 0,74% 6%,100% 34%,90% 62%,98% 88%,60% 100%,26% 90%,8% 60%,0 28%)",
+    "polygon(50% 4%,88% 22%,86% 52%,100% 78%,58% 96%,30% 100%,10% 70%,16% 38%)",
+    "polygon(38% 2%,70% 8%,92% 30%,84% 56%,96% 84%,54% 94%,18% 96%,2% 58%,10% 24%)",
+    "polygon(52% 0,82% 18%,72% 40%,98% 60%,80% 92%,44% 88%,20% 98%,4% 62%,14% 28%,30% 8%)",
+    "polygon(48% 3%,76% 0,96% 36%,88% 66%,64% 100%,34% 90%,12% 74%,0 40%,20% 14%)"
+  ];
   var factBtns = SPACE_FACTS.map(function(f, i){
     var b = document.createElement("button");
     b.type = "button";
     b.className = "spacefact mono" + (f.hideSm ? " sf-hide-sm" : "");
-    b.textContent = f.label;
     b.setAttribute("aria-haspopup", "dialog");
     b.setAttribute("aria-expanded", "false");
-    b.setAttribute("aria-label", f.label + " — reveal space fact");
+    b.setAttribute("aria-label", f.label + " — reveal a space fact");   // no visible text
+    b.style.setProperty("--sf-size", (10 + Math.round(rnd(i * 6.1 + 5) * 15)) + "px");   // 10–25 px
+    b.style.setProperty("--sf-shape", SF_SHAPES[Math.floor(rnd(i * 8.3 + 9) * SF_SHAPES.length) % SF_SHAPES.length]);
     b.addEventListener("click", function(){ openFact(f.label, f.text, b); });
     factLayer.appendChild(b);
     if (REDUCED){                         // reduced-motion: rest at a scattered fixed spot
@@ -2617,14 +2631,21 @@
         x: (0.05 + rnd(i * 3.1 + 1) * 0.80) * window.innerWidth,
         y: (0.07 + rnd(i * 4.3 + 2) * 0.80) * window.innerHeight,
         vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
-        wob: rnd(i * 5.5 + 11) * SF_PI2, w: 0, h: 0, hidden: false
+        wob: rnd(i * 5.5 + 11) * SF_PI2,
+        rot: rnd(i * 7.7 + 13) * SF_PI2,
+        vr: (rnd(i * 9.9 + 17) - 0.5) * 0.5,        // slow tumble, rad/s
+        w: 0, h: 0, hidden: false
       };
-      b.style.transform = "translate3d(" + b._sf.x.toFixed(1) + "px," + b._sf.y.toFixed(1) + "px,0)";
+      b.style.transform = sfTransform(b._sf);
     }
     return b;
   });
 
-  // re-measure each chip and clamp it back inside the viewport (build + resize)
+  function sfTransform(s){
+    return "translate3d(" + s.x.toFixed(1) + "px," + s.y.toFixed(1) + "px,0) rotate(" + s.rot.toFixed(3) + "rad)";
+  }
+
+  // re-measure each asteroid and clamp it back inside the viewport (build + resize)
   function layoutSpaceFacts(){
     if (REDUCED) return;
     for (var i = 0; i < factBtns.length; i++){
@@ -2634,7 +2655,7 @@
       if (s.hidden) continue;
       s.x = Math.max(0, Math.min(window.innerWidth  - s.w, s.x));
       s.y = Math.max(0, Math.min(window.innerHeight - s.h, s.y));
-      b.style.transform = "translate3d(" + s.x.toFixed(1) + "px," + s.y.toFixed(1) + "px,0)";
+      b.style.transform = sfTransform(s);
     }
   }
   // advance the drift one frame — called from renderBg with dt in seconds
@@ -2644,13 +2665,14 @@
     for (var i = 0; i < factBtns.length; i++){
       var b = factBtns[i], s = b._sf; if (!s || s.hidden) continue;
       s.wob += dt * 0.6;
+      s.rot += s.vr * dt;
       s.x += (s.vx + Math.cos(s.wob) * 4) * dt;
       s.y += (s.vy + Math.sin(s.wob * 0.8) * 4) * dt;
       if (s.x <= 0){ s.x = 0; s.vx = Math.abs(s.vx); }
       else if (s.x >= W - s.w){ s.x = W - s.w; s.vx = -Math.abs(s.vx); }
       if (s.y <= 0){ s.y = 0; s.vy = Math.abs(s.vy); }
       else if (s.y >= H - s.h){ s.y = H - s.h; s.vy = -Math.abs(s.vy); }
-      b.style.transform = "translate3d(" + s.x.toFixed(1) + "px," + s.y.toFixed(1) + "px,0)";
+      b.style.transform = sfTransform(s);
     }
   }
   if (!REDUCED) requestAnimationFrame(layoutSpaceFacts);   // measure once laid out
