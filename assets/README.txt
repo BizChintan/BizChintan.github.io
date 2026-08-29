@@ -12,3 +12,10 @@ the CERTS array in index.html). Any extension works — the <img> uses the
 path as-is.
 
 projects/   (optional — academic / professional project photos, any filenames)
+
+Chintan-Dhamecha-Resume.pdf
+  The résumé download. The top-bar button, the footer button and both faces
+  of the ID card link to  assets/Chintan-Dhamecha-Resume.pdf  (exact name).
+  Drop the current PDF here with that filename and the buttons work — no code
+  change needed. To use a different name, update the four href="assets/..."
+  links + the download="" attribute in index.html.

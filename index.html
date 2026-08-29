@@ -154,7 +154,34 @@
   .sound-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
   .sound-toggle[aria-pressed="true"]{ color:var(--teal); border-color:var(--teal); }
   .sound-toggle[aria-pressed="true"] .st-dot{ background:var(--teal); box-shadow:0 0 8px var(--teal); }
-  @media (pointer:coarse){ .sound-toggle{ min-height:44px; } }
+  @media (pointer:coarse){ .sound-toggle, .resume-btn{ min-height:44px; } }
+
+  /* résumé download — shared by the top bar and the footer */
+  .resume-btn{
+    appearance:none; cursor:pointer; text-decoration:none;
+    display:inline-flex; align-items:center; gap:8px;
+    background:none; border:1px solid var(--line-2); color:var(--ink-dim);
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; padding:6px 12px; min-height:32px;
+    transition:color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .resume-btn .rb-ic{ color:var(--teal); font-size:12px; line-height:1; }
+  .resume-btn:hover, .resume-btn:focus-visible{ color:var(--ink); border-color:var(--teal); background:rgba(47,227,196,0.06); }
+  .resume-btn:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+
+  .foot-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+
+  /* résumé download inside the ID card (both faces) */
+  .badge-resume{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-top:auto; padding:13px 10px;
+    border-top:1px solid var(--line);
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--teal); text-decoration:none;
+    background:var(--panel-2);
+    transition:color .18s, background .18s;
+  }
+  .badge-resume:hover, .badge-resume:focus-visible{ color:var(--ink); background:var(--panel); }
 
   /* frozen name bar — slides in once the hero name scrolls out of view; click = open the ID card */
   .namebar{
@@ -1255,6 +1282,9 @@
   <span class="sep"></span>
   <span class="coord">12.9716&deg;N &middot; 77.5946&deg;E</span>
   <span class="clock" id="clock">--:--:-- IST</span>
+  <a class="resume-btn" href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf">
+    <span class="rb-ic" aria-hidden="true">&#x2913;</span>Résumé PDF
+  </a>
   <button type="button" class="sound-toggle" id="soundToggle" aria-pressed="false" aria-label="Sound">
     <span class="st-dot" aria-hidden="true"></span><span class="st-txt">Sound Off</span>
   </button>
@@ -1356,7 +1386,12 @@
 
 <footer class="foot mono">
   <span>Chintan Dhamecha · Bangalore, KA, IND · Signal nominal</span>
-  <button id="footContact" aria-haspopup="dialog" aria-controls="contactOverlay">Open comms ▸</button>
+  <span class="foot-actions">
+    <a class="resume-btn" href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf">
+      <span class="rb-ic" aria-hidden="true">&#x2913;</span>Résumé PDF
+    </a>
+    <button id="footContact" aria-haspopup="dialog" aria-controls="contactOverlay">Open comms ▸</button>
+  </span>
 </footer>
 </div><!-- /#invertwrap -->
 
@@ -1381,6 +1416,7 @@
           <li><span class="val"><span class="k">Location</span><span>Bangalore, Karnataka, India</span></span></li>
         </ul>
         <div class="badge-barcode" aria-hidden="true"></div>
+        <a class="badge-resume" href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf">&#x2913; Download résumé (PDF)</a>
         <div class="badge-ft">
           <button type="button" id="flipToBack">Record ▸</button>
           <button type="button" class="close-modal" data-close>Dismiss ✕</button>
@@ -1408,6 +1444,7 @@
             <li><b>Unisys India</b> — Service Support Representative · Aug 2019 – May 2021</li>
           </ul>
         </div>
+        <a class="badge-resume" href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf">&#x2913; Download résumé (PDF)</a>
         <div class="badge-ft">
           <button type="button" id="flipToFront">◂ Back to ID</button>
           <button type="button" class="close-modal" data-close>Dismiss ✕</button>
@@ -1496,6 +1533,8 @@
   "use strict";
   var docEl = document.documentElement;
   document.body.classList.remove("no-js");
+  // we restore scroll ourselves on close — stop the browser jumping the page on Back
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   var REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var SMALL = function(){ return window.innerWidth <= 620; };
   var MID   = function(){ return window.innerWidth <= 780; };  // scale the scene back at/under this
@@ -1950,7 +1989,7 @@
     unlockScroll();
     navSync();
     document.removeEventListener("keydown", onModalKey, true);
-    if (lastFocused && lastFocused.focus) lastFocused.focus();
+    if (lastFocused && lastFocused.focus) try { lastFocused.focus({ preventScroll: true }); } catch (e){ lastFocused.focus(); }
     // reset timeline markers
     if (overlay === roleOverlay){
       allMarkers.forEach(function(m){ m.setAttribute("aria-expanded","false"); });
@@ -2443,7 +2482,7 @@
     readout.hidden = true;
     if (readoutNode){
       readoutNode.setAttribute("aria-pressed", "false");
-      if (returnFocus) readoutNode.focus();
+      if (returnFocus) try { readoutNode.focus({ preventScroll: true }); } catch (e){ readoutNode.focus(); }
       readoutNode = null;
     }
     document.removeEventListener("keydown", onReadoutKey, true);
@@ -2539,7 +2578,7 @@
     factpop.hidden = true;
     if (factTrigger){
       factTrigger.setAttribute("aria-expanded", "false");
-      if (returnFocus && factTrigger.focus) factTrigger.focus();
+      if (returnFocus && factTrigger.focus) try { factTrigger.focus({ preventScroll: true }); } catch (e){ factTrigger.focus(); }
       factTrigger = null;
     }
     document.removeEventListener("keydown", onFactKey, true);
