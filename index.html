@@ -1277,7 +1277,7 @@
       <li><span class="stat-val" data-count="4.5" data-suffix="+ YRS" data-decimals="1">0<span class="u">+ yrs</span></span><span class="stat-lbl">Leading cross-border<br>ops &amp; transformation</span></li>
     </ul>
 
-    <p class="flare-hint mono" id="flareHint" aria-hidden="true">◎ click the light — flare the corona · scroll to pull back to the system</p>
+    <p class="flare-hint mono" id="flareHint" aria-hidden="true">◎ that's Earth · scroll to pull back and see the whole system</p>
   </section>
 
   <!-- ========== EXPERIENCE ========== -->
@@ -2664,6 +2664,29 @@
   var shoot = null, shootT = 2600;
   var sunFlash = 0;
   var sunScreen = { x:0, y:0, r:0 };
+  var BODY = 1.5;   // every body (Sun + planets) drawn 1.5x larger than before
+  var TAU = Math.PI * 2;
+
+  /* ---- Earth: procedural globe + satellites, and (when idle) an orbiting Moon ---- */
+  var lastScrollT = 0;
+  window.addEventListener("scroll", function(){ lastScrollT = performance.now(); }, { passive: true });
+
+  var earthBase = null, earthGlow = null, earthShade = null, earthLand = null, earthCloud = null, moonBase = null;
+  var LSTRIP = 0;   // width of one wrap of the land/cloud strips
+  var EARTH_SATS = [];
+  for (var _s = 0; _s < 4; _s++){
+    EARTH_SATS.push({
+      orbF: 1.32 + rnd(_s * 3.1 + 1) * 0.7,          // orbit radius, x Earth-radius
+      spd:  0.7 + rnd(_s * 5.7 + 2) * 1.1,
+      ph:   rnd(_s * 9.3 + 3) * TAU,
+      tilt: (rnd(_s * 4.4 + 4) - 0.5) * 1.7,
+      flat: 0.24 + rnd(_s * 2.2 + 5) * 0.22
+    });
+  }
+  var EARTH_MOON = { ang: 0.8, alpha: 0, sats: [] };
+  for (var _m = 0; _m < 2; _m++){
+    EARTH_MOON.sats.push({ orbF: 1.5 + _m * 0.7, spd: 1.6 + _m * 0.9, ph: rnd(_m * 7 + 11) * TAU });
+  }
 
   // Cache the name's document-space geometry so the render loop never calls
   // getBoundingClientRect(); the live viewport position is derived from scrollY.
@@ -2884,12 +2907,187 @@
     }
   }
 
+  /* ---- one-time procedural Earth / Moon textures, baked to offscreen canvases ---- */
+  function mkC(w, h){ var c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
+
+  function buildEarth(){
+    var R = 150, lo = MID();
+
+    earthBase = mkC(R * 2, R * 2);
+    var b = earthBase.getContext("2d");
+    var og = b.createRadialGradient(R * 0.68, R * 0.62, R * 0.15, R, R, R * 1.05);
+    og.addColorStop(0.00, "#2f74c0"); og.addColorStop(0.45, "#1f5aa0");
+    og.addColorStop(0.80, "#123f78"); og.addColorStop(1.00, "#0b2c56");
+    b.fillStyle = og; b.beginPath(); b.arc(R, R, R, 0, TAU); b.fill();
+    b.save(); b.beginPath(); b.arc(R, R, R, 0, TAU); b.clip();
+    b.fillStyle = "rgba(238,246,255,0.9)";
+    b.beginPath(); b.ellipse(R, R * 0.05, R * 0.85, R * 0.28, 0, 0, TAU); b.fill();
+    b.beginPath(); b.ellipse(R, R * 1.95, R * 0.9, R * 0.30, 0, 0, TAU); b.fill();
+    b.restore();
+
+    earthGlow = mkC(R * 3, R * 3);
+    var gc = earthGlow.getContext("2d");
+    var ag = gc.createRadialGradient(R * 1.5, R * 1.5, R * 0.9, R * 1.5, R * 1.5, R * 1.45);
+    ag.addColorStop(0.00, "rgba(120,190,255,0)"); ag.addColorStop(0.62, "rgba(120,190,255,0)");
+    ag.addColorStop(0.74, "rgba(130,200,255,0.32)"); ag.addColorStop(0.86, "rgba(120,180,255,0.12)");
+    ag.addColorStop(1.00, "rgba(120,180,255,0)");
+    gc.fillStyle = ag; gc.beginPath(); gc.arc(R * 1.5, R * 1.5, R * 1.45, 0, TAU); gc.fill();
+
+    earthShade = mkC(R * 2, R * 2);
+    var sc = earthShade.getContext("2d");
+    var sg = sc.createRadialGradient(R * 1.42, R, R * 0.1, R * 1.42, R, R * 1.7);
+    sg.addColorStop(0.00, "rgba(2,6,16,0.85)"); sg.addColorStop(0.5, "rgba(2,6,16,0.42)");
+    sg.addColorStop(0.82, "rgba(2,6,16,0.06)"); sg.addColorStop(1.00, "rgba(2,6,16,0)");
+    sc.save(); sc.beginPath(); sc.arc(R, R, R, 0, TAU); sc.clip();
+    sc.fillStyle = sg; sc.fillRect(0, 0, R * 2, R * 2); sc.restore();
+
+    var LW = lo ? 320 : 512, LH = lo ? 160 : 256;
+    LSTRIP = LW;
+    var LAND = [
+      [0.17, 0.30, 0.11, 0.20, "#3f7a3a"], [0.13, 0.42, 0.06, 0.10, "#4c7f3c"],
+      [0.27, 0.66, 0.07, 0.22, "#3c7838"], [0.50, 0.34, 0.05, 0.12, "#6b8a3f"],
+      [0.54, 0.55, 0.09, 0.26, "#7c7a3c"], [0.68, 0.36, 0.17, 0.22, "#5c7f3a"],
+      [0.83, 0.70, 0.07, 0.10, "#8a6f3c"], [0.44, 0.60, 0.03, 0.05, "#6b8a3f"]
+    ];
+    function blob(ctx, xp, yp, rw, rh, col){
+      ctx.fillStyle = col; ctx.beginPath();
+      for (var k = 0; k <= 14; k++){
+        var a = k / 14 * TAU, wob = 0.62 + 0.5 * rnd(k * 7.7 + xp * 0.9 + yp * 0.13);
+        var xx = xp + Math.cos(a) * rw * wob, yy = yp + Math.sin(a) * rh * wob;
+        if (k === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+    earthLand = mkC(LW * 2, LH);
+    var lc = earthLand.getContext("2d");
+    for (var pass = 0; pass < 2; pass++){
+      var ox = pass * LW;
+      for (var q = 0; q < LAND.length; q++){
+        var L = LAND[q];
+        blob(lc, ox + L[0] * LW, L[1] * LH, L[2] * LW, L[3] * LH, L[4]);
+      }
+      for (var isl = 0; isl < (lo ? 6 : 12); isl++){
+        lc.fillStyle = "#5a8340";
+        lc.beginPath();
+        lc.arc(ox + rnd(isl * 3.3 + 1) * LW, (0.2 + rnd(isl * 5.1 + 2) * 0.6) * LH,
+               2 + rnd(isl * 2.2 + 3) * (lo ? 4 : 7), 0, TAU);
+        lc.fill();
+      }
+    }
+
+    earthCloud = mkC(LW * 2, LH);
+    var cc = earthCloud.getContext("2d");
+    for (var cp = 0; cp < (lo ? 22 : 44); cp++){
+      var pxp = rnd(cp * 4.7 + 1) * LW * 2, pyp = (0.08 + rnd(cp * 8.3 + 2) * 0.84) * LH;
+      var prr = (lo ? 10 : 16) + rnd(cp * 2.9 + 3) * (lo ? 16 : 30);
+      var pg2 = cc.createRadialGradient(pxp, pyp, 0, pxp, pyp, prr);
+      pg2.addColorStop(0, "rgba(255,255,255,0.7)"); pg2.addColorStop(0.5, "rgba(255,255,255,0.28)");
+      pg2.addColorStop(1, "rgba(255,255,255,0)");
+      cc.fillStyle = pg2; cc.beginPath(); cc.arc(pxp, pyp, prr, 0, TAU); cc.fill();
+    }
+
+    var MR = 96;
+    moonBase = mkC(MR * 2, MR * 2);
+    var mc = moonBase.getContext("2d");
+    var mg = mc.createRadialGradient(MR * 0.68, MR * 0.64, MR * 0.1, MR, MR, MR * 1.05);
+    mg.addColorStop(0, "#c9c9cf"); mg.addColorStop(0.55, "#9a9aa2"); mg.addColorStop(1, "#5c5c66");
+    mc.fillStyle = mg; mc.beginPath(); mc.arc(MR, MR, MR, 0, TAU); mc.fill();
+    mc.save(); mc.beginPath(); mc.arc(MR, MR, MR, 0, TAU); mc.clip();
+    for (var cr = 0; cr < 9; cr++){
+      var crx = MR + (rnd(cr * 3.7 + 1) - 0.5) * MR * 1.5, cry = MR + (rnd(cr * 6.1 + 2) - 0.5) * MR * 1.5;
+      var crr = MR * (0.06 + rnd(cr * 2.3 + 3) * 0.16);
+      mc.fillStyle = "rgba(70,70,80,0.45)"; mc.beginPath(); mc.arc(crx, cry, crr, 0, TAU); mc.fill();
+      mc.fillStyle = "rgba(210,210,220,0.35)"; mc.beginPath(); mc.arc(crx - crr * 0.3, cry - crr * 0.3, crr * 0.7, 0, TAU); mc.fill();
+    }
+    mc.restore();
+  }
+
+  function drawEarth(cx, cy, r, t, pe, idle, sunAng){
+    if (!isFinite(cx) || !isFinite(cy) || !(r > 0)) return;
+    if (r < 7){                                   // far zoom — cheap shaded dot
+      var dg = bctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
+      dg.addColorStop(0, "#7bbdf0"); dg.addColorStop(1, "#123f78");
+      bctx.fillStyle = dg; bctx.beginPath(); bctx.arc(cx, cy, r, 0, TAU); bctx.fill();
+      return;
+    }
+    if (!earthBase) buildEarth();
+    var lo = MID();
+
+    var gs = r * 2.9;
+    bctx.drawImage(earthGlow, cx - gs / 2, cy - gs / 2, gs, gs);
+
+    var back = [], front = [];
+    if (r > 9){
+      for (var si = 0; si < (lo ? 3 : 4); si++){
+        var S = EARTH_SATS[si];
+        var a = S.ph + (REDUCED ? 0 : t * 0.001 * S.spd);
+        var ex = Math.cos(a) * r * S.orbF, ey = Math.sin(a) * r * S.orbF * S.flat;
+        var tc = Math.cos(S.tilt), ts = Math.sin(S.tilt);
+        (Math.sin(a) < 0 ? back : front).push([cx + ex * tc - ey * ts, cy + ex * ts + ey * tc]);
+      }
+    }
+    function paintSat(p){
+      bctx.strokeStyle = "rgba(180,210,240,0.5)"; bctx.lineWidth = 1;
+      bctx.beginPath(); bctx.moveTo(p[0] - 3, p[1]); bctx.lineTo(p[0] + 3, p[1]);
+      bctx.moveTo(p[0], p[1] - 3); bctx.lineTo(p[0], p[1] + 3); bctx.stroke();
+      bctx.fillStyle = "rgba(235,245,255,0.95)";
+      bctx.beginPath(); bctx.arc(p[0], p[1], 1.6, 0, TAU); bctx.fill();
+    }
+    for (var bi = 0; bi < back.length; bi++) paintSat(back[bi]);
+
+    bctx.save();
+    bctx.beginPath(); bctx.arc(cx, cy, r, 0, TAU); bctx.clip();
+    bctx.drawImage(earthBase, cx - r, cy - r, r * 2, r * 2);
+    var loff = REDUCED ? 0 : Math.floor((t * 0.006) % LSTRIP);
+    var coff = REDUCED ? 0 : Math.floor((t * 0.010) % LSTRIP);
+    bctx.globalAlpha = 0.92;
+    bctx.drawImage(earthLand, loff, 0, LSTRIP, earthLand.height, cx - r, cy - r, r * 2, r * 2);
+    if (!lo){
+      bctx.globalAlpha = 0.4;
+      bctx.drawImage(earthCloud, coff, 0, LSTRIP, earthCloud.height, cx - r, cy - r, r * 2, r * 2);
+    }
+    bctx.globalAlpha = 1;
+    bctx.translate(cx, cy); bctx.rotate((sunAng || Math.PI) - Math.PI);
+    bctx.drawImage(earthShade, -r, -r, r * 2, r * 2);
+    bctx.restore();
+
+    bctx.strokeStyle = "rgba(150,205,255,0.45)";
+    bctx.lineWidth = Math.max(1, r * 0.03);
+    bctx.beginPath(); bctx.arc(cx, cy, r * 0.99, (sunAng || 0) - 1.35, (sunAng || 0) + 1.35); bctx.stroke();
+
+    for (var fi = 0; fi < front.length; fi++) paintSat(front[fi]);
+
+    var want = (pe < 0.14 && idle && r > 13) ? 1 : 0;
+    EARTH_MOON.alpha += (want - EARTH_MOON.alpha) * 0.06;
+    if (EARTH_MOON.alpha > 0.02){
+      if (idle && !REDUCED) EARTH_MOON.ang += 0.0045;
+      var ma = EARTH_MOON.ang, mOrb = r * 2.6, mtc = Math.cos(0.5), mts = Math.sin(0.5);
+      var mex = Math.cos(ma) * mOrb, mey = Math.sin(ma) * mOrb * 0.44;
+      var mx = cx + mex * mtc - mey * mts, my = cy + mex * mts + mey * mtc;
+      var mr = Math.max(3, r * 0.27);
+      bctx.globalAlpha = EARTH_MOON.alpha;
+      bctx.strokeStyle = "rgba(170,185,210,0.14)"; bctx.lineWidth = 1;
+      bctx.beginPath(); bctx.ellipse(cx, cy, mOrb, mOrb * 0.44, 0.5, 0, TAU); bctx.stroke();
+      bctx.drawImage(moonBase, mx - mr, my - mr, mr * 2, mr * 2);
+      for (var msi = 0; msi < EARTH_MOON.sats.length; msi++){
+        var MS = EARTH_MOON.sats[msi];
+        var msa = MS.ph + (REDUCED ? 0 : t * 0.001 * MS.spd);
+        bctx.fillStyle = "rgba(235,245,255,0.9)";
+        bctx.beginPath();
+        bctx.arc(mx + Math.cos(msa) * mr * MS.orbF, my + Math.sin(msa) * mr * MS.orbF * 0.4, 1.2, 0, TAU);
+        bctx.fill();
+      }
+      bctx.globalAlpha = 1;
+    }
+  }
+
   function sizeBg(){
     bw = window.innerWidth; bh = window.innerHeight;
     minDim = Math.min(bw, bh);
     bgDpr = MID() ? 1 : DPR;
     bg.width = bw * bgDpr; bg.height = bh * bgDpr;
     bctx.setTransform(bgDpr, 0, 0, bgDpr, 0, 0);
+    try { buildEarth(); } catch (e) { earthBase = null; }   // rebuild at the current detail level
 
     // faint "ground station" grid — fades out as the camera climbs into space
     gridLayer.width = bw * bgDpr; gridLayer.height = bh * bgDpr;
@@ -2939,29 +3137,41 @@
   }
 
   function drawSolarSystem(t, pe){
-    // zoomed-in resting view; pulls back (but not as far as before) on scroll
-    var scaleMax = (minDim * 0.155) / SUN_WR;
-    var scaleMin = (minDim * (SMALL() ? 0.46 : 0.52)) / NEPTUNE_R;
+    // zoomed-in resting view; pulls back on scroll. All bodies 1.5x (BODY).
+    var scaleMax = (minDim * 0.2325) / SUN_WR;
+    var scaleMin = (minDim * (SMALL() ? 0.62 : 0.70)) / NEPTUNE_R;
     var scale = scaleMax * Math.pow(scaleMin / scaleMax, pe);
 
     // system (planets + orbits) fades in as the camera starts pulling back
     var sysA = Math.min(1, Math.max(0, (pe - 0.05) / 0.30));
     sysA = sysA * sysA * (3 - 2 * sysA);
+    var idle = (performance.now() - lastScrollT) > 350;
 
-    var ax = bw * 0.32, ay = bh * 0.46;
-    if (nameGeo.w){
-      var nbTop = nameGeo.top - (window.pageYOffset || 0);   // live viewport y, no layout read
-      ax = nameGeo.left + nameGeo.w * (SMALL() ? 0.5 : 0.6);
-      ay = Math.max(bh * 0.06, Math.min(bh * 0.94, nbTop + nameGeo.h * 0.62));
-    }
-    ax = Math.max(bw * 0.18, Math.min(bw * 0.82, ax));   // keep the larger sun on screen
-    var tx = bw * (SMALL() ? 0.5 : 0.58), ty = bh * (SMALL() ? 0.3 : 0.4);
-    var cx = ax + (tx - ax) * pe;
-    var cy = ay + (ty - ay) * pe;
+    // Earth's live orbital angle — shared by the camera pin and drawEarth
+    var earthAng = PLANETS[2].a0 + (REDUCED ? 0 : t * 0.00013 * PLANETS[2].spin);
+    var earthOrbR = PLANETS[2].r * scale;
+
+    // pe~0: Earth sits beside the hero name at name-ish size; pe->1: camera re-centres on the Sun
+    var nbTop = nameGeo.top - (window.pageYOffset || 0);
+    var eBigR = Math.max(28, Math.min(132, (nameGeo.h || 130) * 0.26));
+    var eNatR = PLANETS[2].wr * scale * BODY;
+    var earthR = eNatR + (eBigR - eNatR) * (1 - Math.min(1, pe / 0.42));
+    var eTX = nameGeo.w
+      ? Math.max(eBigR + 14, Math.min(bw - eBigR - 14, nameGeo.left + nameGeo.w * (SMALL() ? 0.66 : 0.92) + eBigR + 16))
+      : bw * 0.7;
+    var eTY = nameGeo.w
+      ? Math.max(eBigR + 58, Math.min(bh - eBigR - 20, nbTop + nameGeo.h * (SMALL() ? 0.88 : 0.44)))
+      : bh * 0.4;
+    var camPinX = eTX - Math.cos(earthAng) * earthOrbR;
+    var camPinY = eTY - Math.sin(earthAng) * earthOrbR * 0.985;
+    var camSysX = bw * (SMALL() ? 0.5 : 0.56), camSysY = bh * (SMALL() ? 0.34 : 0.42);
+    var cx = camPinX + (camSysX - camPinX) * pe;
+    var cy = camPinY + (camSysY - camPinY) * pe;
 
     var glow = !MID();
 
-    var sunR = Math.max(3, SUN_WR * scale);
+    var sunR = Math.max(3, SUN_WR * scale * BODY);
+    var sunA = Math.min(1, pe / 0.12);   // Sun rises into view as you scroll off the top
     sunScreen.x = cx; sunScreen.y = cy; sunScreen.r = sunR;
     var docShift = (window.pageYOffset || 0);   // .planet-hits is now absolute inside #invertwrap
     if (sunHitBtn && EGG.state === "idle"){
@@ -3005,29 +3215,48 @@
       bctx.globalAlpha = 1;
     }
 
-    // sun
-    var pulse = 1 + 0.04 * Math.sin(t * 0.0016) + sunFlash * 0.18;
-    var glowR = sunR * (2.2 + sunFlash * 0.8) * pulse;
-    var g = bctx.createRadialGradient(cx, cy, sunR * 0.2, cx, cy, glowR);
-    g.addColorStop(0.00, "rgba(255,249,238,0.92)");
-    g.addColorStop(0.12, "rgba(255,216,155," + (0.66 + sunFlash * 0.18).toFixed(3) + ")");
-    g.addColorStop(0.32, "rgba(255,165,74," + (0.30 + sunFlash * 0.22).toFixed(3) + ")");
-    g.addColorStop(0.68, "rgba(255,120,50,0.07)");
-    g.addColorStop(1, "rgba(255,120,50,0)");
-    bctx.fillStyle = g;
-    bctx.beginPath(); bctx.arc(cx, cy, glowR, 0, Math.PI * 2); bctx.fill();
+    // sun — fades in from the top as you scroll
+    if (sunA > 0.01){
+      bctx.globalAlpha = sunA;
+      var pulse = 1 + 0.04 * Math.sin(t * 0.0016) + sunFlash * 0.18;
+      var glowR = sunR * (2.2 + sunFlash * 0.8) * pulse;
+      var g = bctx.createRadialGradient(cx, cy, sunR * 0.2, cx, cy, glowR);
+      g.addColorStop(0.00, "rgba(255,249,238,0.92)");
+      g.addColorStop(0.12, "rgba(255,216,155," + (0.66 + sunFlash * 0.18).toFixed(3) + ")");
+      g.addColorStop(0.32, "rgba(255,165,74," + (0.30 + sunFlash * 0.22).toFixed(3) + ")");
+      g.addColorStop(0.68, "rgba(255,120,50,0.07)");
+      g.addColorStop(1, "rgba(255,120,50,0)");
+      bctx.fillStyle = g;
+      bctx.beginPath(); bctx.arc(cx, cy, glowR, 0, Math.PI * 2); bctx.fill();
 
-    var cg = bctx.createRadialGradient(cx - sunR * 0.28, cy - sunR * 0.28, sunR * 0.08, cx, cy, sunR);
-    cg.addColorStop(0, "#fffdf6");
-    cg.addColorStop(0.45, "#ffe6b4");
-    cg.addColorStop(1, "#ffab4e");
-    bctx.fillStyle = cg;
-    bctx.beginPath(); bctx.arc(cx, cy, sunR, 0, Math.PI * 2); bctx.fill();
+      var cg = bctx.createRadialGradient(cx - sunR * 0.28, cy - sunR * 0.28, sunR * 0.08, cx, cy, sunR);
+      cg.addColorStop(0, "#fffdf6");
+      cg.addColorStop(0.45, "#ffe6b4");
+      cg.addColorStop(1, "#ffab4e");
+      bctx.fillStyle = cg;
+      bctx.beginPath(); bctx.arc(cx, cy, sunR, 0, Math.PI * 2); bctx.fill();
+      bctx.globalAlpha = 1;
+    }
 
-    // planet hit-targets are only live once the system is clearly visible
+    // --- Earth: always drawn (it's the hero-adjacent body), with satellites + idle Moon ---
+    var epx = cx + Math.cos(earthAng) * earthOrbR;
+    var epy = cy + Math.sin(earthAng) * earthOrbR * 0.985;
+    drawEarth(epx, epy, earthR, t, pe, idle, Math.atan2(cy - epy, cx - epx));
+    if (planetBtns[2] && EGG.state === "idle"){
+      var eg = earthR + 8;
+      var es = Math.cos(earthAng) >= 0 ? 1 : -1;
+      if (es > 0 && epx + eg + 96 > bw) es = -1; else if (es < 0 && epx - eg - 96 < 0) es = 1;
+      planetBtns[2].style.transform = "translate3d(" + (epx + es * eg).toFixed(1) + "px," +
+        (epy + docShift).toFixed(1) + "px,0)" + (es > 0 ? " translate(0,-50%)" : " translate(-100%,-50%)");
+      if (planetBtns[2]._vis !== true){ planetBtns[2].hidden = false; planetBtns[2]._vis = true; }
+    }
+    if (snap) snap.push({ x: epx, y: epy, r: Math.min(earthR, 42), col: PLANETS[2].col, pidx: 2 });
+
+    // planet hit-targets are only live once the system is clearly visible (Earth's is always on)
     var hitsLive = sysA > 0.15;
     if (!hitsLive){
       for (var hb = 0; hb < planetBtns.length; hb++){
+        if (hb === 2) continue;
         var pbh = planetBtns[hb];
         if (pbh._vis){ pbh.hidden = true; pbh._vis = false; }
       }
@@ -3037,6 +3266,7 @@
     // planets
     bctx.globalAlpha = sysA;
     for (var j = 0; j < PLANETS.length; j++){
+      if (j === 2) continue;   // Earth is drawn above, always
       var p = PLANETS[j];
       var vis = false;
       var orbR = p.r * scale;
@@ -3046,7 +3276,7 @@
         var px = cx + ca * orbR;
         var py = cy + Math.sin(ang) * orbR * 0.985;
         if (!(px < -70 || px > bw + 70 || py < -70 || py > bh + 70)){
-          var pr = Math.max(1.1, Math.min(180, p.wr * scale));
+          var pr = Math.max(1.1, Math.min(240, p.wr * scale * BODY));
 
           if (glow && pr > 1.5){
             var pgl = bctx.createRadialGradient(px, py, 0, px, py, pr * 3.2);
