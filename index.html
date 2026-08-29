@@ -650,9 +650,15 @@
 
   @media (max-width:640px){
     .spacefact.sf-hide-sm{ display:none; }
-    .planet-hit{ font-size:8px; letter-spacing:.08em; opacity:.32; padding:3px 5px; }
+    /* keep padding identical to desktop — the label position is transform-anchored to this box */
+    .planet-hit{ font-size:8px; letter-spacing:.08em; opacity:.32; }
   }
-  @media (pointer:coarse){ .planet-hit{ min-height:44px; padding-left:10px; padding-right:10px; } }
+  /* touch: widen the tap target with a pseudo-element so it adds NO layout — the visible
+     label stays exactly where the desktop transform places it (was: min-height:44px +
+     extra padding, which shifted the tag off its planet on phones) */
+  @media (pointer:coarse){
+    .planet-hit:not(.sun-hit)::after{ content:""; position:absolute; inset:-14px -12px; }
+  }
   .sun-hit{ width:64px; height:64px; }
   @media (pointer:coarse){ .sun-hit{ width:76px; height:76px; min-height:0; } }
 
