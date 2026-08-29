@@ -46,6 +46,10 @@
   *::-webkit-scrollbar{ width:0 !important; height:0 !important; display:none !important; }
   *{ scrollbar-width:none; }
 
+  /* while a detail panel is open: freeze the page so it can't scroll behind the overlay */
+  html.scroll-locked{ overflow:hidden; }
+  body.scroll-locked{ position:fixed; left:0; right:0; width:100%; overflow:hidden; }
+
   /* top-of-viewport scroll-progress line, grows left -> right */
   #scrollbar{
     position:fixed; top:0; left:0; z-index:250;
@@ -1496,6 +1500,31 @@
   var SMALL = function(){ return window.innerWidth <= 620; };
   var MID   = function(){ return window.innerWidth <= 780; };  // scale the scene back at/under this
 
+  /* ---------- body scroll lock (used while a detail panel is open) ----------
+     position:fixed on <body> is the only technique that reliably stops the page
+     scrolling behind a fixed overlay on iOS Safari. pageY() lets the background
+     camera and top-UI keep reading the real scroll offset while it's frozen. */
+  var _lockY = 0, _locked = false;
+  function pageY(){ return _locked ? _lockY : (window.pageYOffset || docEl.scrollTop || 0); }
+  function lockScroll(){
+    if (_locked) return;
+    _lockY = window.pageYOffset || docEl.scrollTop || 0;
+    _locked = true;
+    document.body.style.top = (-_lockY) + "px";
+    docEl.classList.add("scroll-locked");
+    document.body.classList.add("scroll-locked");
+  }
+  function unlockScroll(){
+    if (!_locked) return;
+    _locked = false;
+    docEl.classList.remove("scroll-locked");
+    document.body.classList.remove("scroll-locked");
+    document.body.style.top = "";
+    var sb = docEl.style.scrollBehavior; docEl.style.scrollBehavior = "auto";
+    window.scrollTo(0, _lockY);
+    docEl.style.scrollBehavior = sb;
+  }
+
   /* ---------- scroll-reactive top UI ----------
      - #scrollbar: red progress line, grows left -> right (replaces the native bar)
      - #nameBar : frozen name column that slides in once the hero name scrolls
@@ -1509,12 +1538,12 @@
     function measure(){
       if (hero){
         var r = hero.getBoundingClientRect();
-        nameTop = r.top + (window.pageYOffset || 0);   // hero-name top, in document space
+        nameTop = r.top + pageY();   // hero-name top, in document space
       }
     }
     function paint(){
       raf = 0;
-      var y = window.pageYOffset || docEl.scrollTop || 0;
+      var y = pageY();
       if (bar){
         var max = docEl.scrollHeight - window.innerHeight;
         var p = max > 0 ? y / max : 0;
@@ -1851,7 +1880,7 @@
     lastFocused = opener || document.activeElement;
     overlay.hidden = false;
     activeOverlay = overlay;
-    document.body.style.overflow = "hidden";
+    lockScroll();
     var em = overlay.querySelector(EMERGE_SEL);
     if (em){
       if (opener && opener.getBoundingClientRect) emergeOrigin(em, opener.getBoundingClientRect());
@@ -1875,7 +1904,7 @@
       closeTimer = null;
     }, REDUCED ? 0 : 170);
     activeOverlay = null;
-    document.body.style.overflow = "";
+    unlockScroll();
     document.removeEventListener("keydown", onModalKey, true);
     if (lastFocused && lastFocused.focus) lastFocused.focus();
     // reset timeline markers
@@ -2695,7 +2724,7 @@
   var nameGeo = { top: 0, left: 0, w: 0, h: 0 };
   function measureName(){
     var r = nameBtn.getBoundingClientRect();
-    nameGeo.top = r.top + (window.pageYOffset || 0);
+    nameGeo.top = r.top + pageY();
     nameGeo.left = r.left;
     nameGeo.w = r.width;
     nameGeo.h = r.height;
@@ -2709,7 +2738,7 @@
     var vh = bh || window.innerHeight;
     // spread the zoom-out over more scroll so the view stays comfortably
     // zoomed-in (planets clickable) for longer before pulling back
-    return Math.min(1, Math.max(0, (window.pageYOffset || 0) / (vh * 2.1)));
+    return Math.min(1, Math.max(0, pageY() / (vh * 2.1)));
   }
   function easeInOut(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2; }
   function hexA(hex, a){
@@ -3231,7 +3260,7 @@
   }
 
   function drawStars(t){
-    var par = (window.pageYOffset || 0) * 0.025;
+    var par = pageY() * 0.025;
     for (var i = 0; i < stars.length; i++){
       var s = stars[i];
       if (!REDUCED){ s.y += s.z * 0.11; if (s.y > bh + 2){ s.y = -2; s.x = Math.random() * bw; } }
@@ -3261,7 +3290,7 @@
     var earthOrbR = PLANETS[2].r * scale;
 
     // pe~0: Earth sits beside the hero name at name-ish size; pe->1: camera re-centres on the Sun
-    var nbTop = nameGeo.top - (window.pageYOffset || 0);
+    var nbTop = nameGeo.top - pageY();
     var eBigR = Math.max(28, Math.min(132, (nameGeo.h || 130) * 0.26));
     var eNatR = PLANETS[2].wr * scale * BODY;
     var earthR = eNatR + (eBigR - eNatR) * (1 - Math.min(1, pe / 0.42));
@@ -3281,7 +3310,7 @@
     var sunR = Math.max(3, SUN_WR * scale * BODY);
     var sunA = Math.min(1, pe / 0.12);   // Sun rises into view as you scroll off the top
     sunScreen.x = cx; sunScreen.y = cy; sunScreen.r = sunR;
-    var docShift = (window.pageYOffset || 0);   // .planet-hits is now absolute inside #invertwrap
+    var docShift = pageY();   // .planet-hits is now absolute inside #invertwrap
     if (sunHitBtn && EGG.state === "idle"){
       sunHitBtn.style.transform =
         "translate3d(" + cx.toFixed(1) + "px," + (cy + docShift).toFixed(1) + "px,0) translate(-50%,-50%)";
@@ -3290,7 +3319,7 @@
       // counter is position:absolute inside #invertwrap → place it in DOCUMENT space
       // (viewport y + scrollY) so it tracks the Sun yet scrolls with the page
       var ccx = Math.max(6, Math.min(bw - 128, cx + sunR * 0.72 + 6));
-      var ccy = Math.max(56, cy - sunR * 0.72 - 6) + (window.pageYOffset || 0);
+      var ccy = Math.max(56, cy - sunR * 0.72 - 6) + pageY();
       sunCounterEl.style.transform = "translate3d(" + ccx.toFixed(1) + "px," + ccy.toFixed(1) + "px,0)";
       if (sunCounterEl.hidden) sunCounterEl.hidden = false;
     }
