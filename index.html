@@ -237,13 +237,14 @@
     font-size:clamp(3.2rem, 13vw, 9.2rem);
     font-weight:700; text-transform:uppercase;
     color:var(--ink);
-    transition:transform .5s var(--ease), color .3s var(--ease);
-    text-shadow:0 0 4px rgba(4,6,12,0.85), 0 0 26px rgba(4,6,12,0.72),
-                0 3px 18px rgba(4,6,12,0.62), 0 0 64px rgba(255,179,71,0.12);
+    transform:translateZ(0);            /* own compositing layer — hover slide never repaints the glyphs */
+    backface-visibility:hidden;
+    transition:transform .38s var(--ease), color .3s var(--ease);
+    text-shadow:0 2px 12px rgba(4,6,12,0.82), 0 0 30px rgba(4,6,12,0.55);
   }
   .name-line:last-of-type{ color:#c8d4d3; }
   .name-btn:hover .name-line,
-  .name-btn:focus-visible .name-line{ color:var(--teal); transform:translateX(10px); }
+  .name-btn:focus-visible .name-line{ color:var(--teal); transform:translate3d(10px,0,0); }
   .name-btn:hover .name-line:last-of-type,
   .name-btn:focus-visible .name-line:last-of-type{ color:var(--ink); }
   .name-hint{
@@ -2672,6 +2673,7 @@
   window.addEventListener("scroll", function(){ lastScrollT = performance.now(); }, { passive: true });
 
   var earthBase = null, earthGlow = null, earthShade = null, earthLand = null, earthCloud = null, moonBase = null;
+  var earthFrame = null, earthFrameKey = "";   // composited globe sprite, rebuilt only when it visibly changes
   var LSTRIP = 0;   // width of one wrap of the land/cloud strips
   var EARTH_SATS = [];
   for (var _s = 0; _s < 4; _s++){
@@ -2911,52 +2913,119 @@
   function mkC(w, h){ var c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
 
   function buildEarth(){
-    var R = 150, lo = MID();
+    var R = 160, lo = MID();
 
+    /* ---------- base disc: ocean + spherical shading + feathered polar caps ---------- */
     earthBase = mkC(R * 2, R * 2);
     var b = earthBase.getContext("2d");
-    var og = b.createRadialGradient(R * 0.68, R * 0.62, R * 0.15, R, R, R * 1.05);
-    og.addColorStop(0.00, "#2f74c0"); og.addColorStop(0.45, "#1f5aa0");
-    og.addColorStop(0.80, "#123f78"); og.addColorStop(1.00, "#0b2c56");
+    var og = b.createRadialGradient(R * 0.60, R * 0.54, R * 0.06, R * 1.04, R * 1.04, R * 1.5);
+    og.addColorStop(0.00, "#3c88d0"); og.addColorStop(0.34, "#256aad");
+    og.addColorStop(0.62, "#164a82"); og.addColorStop(0.84, "#0d3560");
+    og.addColorStop(1.00, "#071f3d");
     b.fillStyle = og; b.beginPath(); b.arc(R, R, R, 0, TAU); b.fill();
+
     b.save(); b.beginPath(); b.arc(R, R, R, 0, TAU); b.clip();
-    b.fillStyle = "rgba(238,246,255,0.9)";
-    b.beginPath(); b.ellipse(R, R * 0.05, R * 0.85, R * 0.28, 0, 0, TAU); b.fill();
-    b.beginPath(); b.ellipse(R, R * 1.95, R * 0.9, R * 0.30, 0, 0, TAU); b.fill();
+
+    // faint ocean mottling so the water isn't a flat wash
+    for (var om = 0; om < (lo ? 9 : 20); om++){
+      var ox2 = R + (rnd(om * 5.1 + 40) - 0.5) * R * 1.9;
+      var oy2 = R + (rnd(om * 3.7 + 41) - 0.5) * R * 1.9;
+      var orr = R * (0.12 + rnd(om * 2.3 + 42) * 0.30);
+      var omg = b.createRadialGradient(ox2, oy2, 0, ox2, oy2, orr);
+      var dk = rnd(om + 43) > 0.5;
+      omg.addColorStop(0, dk ? "rgba(8,32,58,0.26)" : "rgba(70,140,200,0.15)");
+      omg.addColorStop(1, "rgba(0,0,0,0)");
+      b.fillStyle = omg; b.beginPath(); b.arc(ox2, oy2, orr, 0, TAU); b.fill();
+    }
+
+    // Antarctica — a real south polar cap with a soft feathered top edge
+    var antG = b.createRadialGradient(R, R * 2.05, R * 0.12, R, R * 2.05, R * 1.2);
+    antG.addColorStop(0.00, "#f5f9ff"); antG.addColorStop(0.52, "#e7efff");
+    antG.addColorStop(0.78, "rgba(221,233,251,0.5)"); antG.addColorStop(1.00, "rgba(210,226,248,0)");
+    b.fillStyle = antG;
+    b.beginPath(); b.ellipse(R, R * 1.92, R * 1.12, R * 0.5, 0, 0, TAU); b.fill();
+    b.fillStyle = "rgba(245,249,255,0.92)";
+    b.beginPath(); b.ellipse(R * 0.72, R * 1.8, R * 0.26, R * 0.15, 0, 0, TAU); b.fill();
+    b.beginPath(); b.ellipse(R * 1.33, R * 1.82, R * 0.22, R * 0.13, 0, 0, TAU); b.fill();
+    b.strokeStyle = "rgba(150,180,225,0.22)"; b.lineWidth = R * 0.012;
+    for (var av = 0; av < 5; av++){
+      b.beginPath();
+      b.moveTo(R * (0.3 + av * 0.1), R * 1.72);
+      b.lineTo(R * (0.34 + av * 0.1) + (rnd(av + 7) - 0.5) * R * 0.1, R * 1.98);
+      b.stroke();
+    }
+
+    // Arctic — smaller, broken sea-ice around the north pole
+    for (var ai = 0; ai < 6; ai++){
+      var aix = R + (rnd(ai * 4.1 + 20) - 0.5) * R * 1.5;
+      var aiy = R * (0.02 + rnd(ai * 6.3 + 21) * 0.15);
+      var air = R * (0.09 + rnd(ai * 2.7 + 22) * 0.2);
+      var aig = b.createRadialGradient(aix, aiy, 0, aix, aiy, air);
+      aig.addColorStop(0, "rgba(239,245,255,0.78)");
+      aig.addColorStop(0.6, "rgba(224,234,252,0.36)");
+      aig.addColorStop(1, "rgba(224,234,252,0)");
+      b.fillStyle = aig; b.beginPath(); b.arc(aix, aiy, air, 0, TAU); b.fill();
+    }
+
+    // baked sphere shading — bright highlight upper-left, deep limb lower-right
+    var shd = b.createRadialGradient(R * 0.55, R * 0.5, R * 0.14, R, R, R * 1.55);
+    shd.addColorStop(0.00, "rgba(255,255,255,0.12)");
+    shd.addColorStop(0.28, "rgba(255,255,255,0)");
+    shd.addColorStop(0.60, "rgba(0,6,18,0)");
+    shd.addColorStop(0.84, "rgba(0,6,18,0.34)");
+    shd.addColorStop(1.00, "rgba(0,4,12,0.68)");
+    b.fillStyle = shd; b.fillRect(0, 0, R * 2, R * 2);
     b.restore();
 
+    /* ---------- atmosphere glow ---------- */
     earthGlow = mkC(R * 3, R * 3);
     var gc = earthGlow.getContext("2d");
-    var ag = gc.createRadialGradient(R * 1.5, R * 1.5, R * 0.9, R * 1.5, R * 1.5, R * 1.45);
-    ag.addColorStop(0.00, "rgba(120,190,255,0)"); ag.addColorStop(0.62, "rgba(120,190,255,0)");
-    ag.addColorStop(0.74, "rgba(130,200,255,0.32)"); ag.addColorStop(0.86, "rgba(120,180,255,0.12)");
+    var ag = gc.createRadialGradient(R * 1.5, R * 1.5, R * 0.92, R * 1.5, R * 1.5, R * 1.42);
+    ag.addColorStop(0.00, "rgba(150,210,255,0)"); ag.addColorStop(0.66, "rgba(150,210,255,0)");
+    ag.addColorStop(0.76, "rgba(155,215,255,0.42)"); ag.addColorStop(0.88, "rgba(120,180,255,0.14)");
     ag.addColorStop(1.00, "rgba(120,180,255,0)");
-    gc.fillStyle = ag; gc.beginPath(); gc.arc(R * 1.5, R * 1.5, R * 1.45, 0, TAU); gc.fill();
+    gc.fillStyle = ag; gc.beginPath(); gc.arc(R * 1.5, R * 1.5, R * 1.42, 0, TAU); gc.fill();
 
+    /* ---------- sun-tracked day/night overlay ---------- */
     earthShade = mkC(R * 2, R * 2);
     var sc = earthShade.getContext("2d");
-    var sg = sc.createRadialGradient(R * 1.42, R, R * 0.1, R * 1.42, R, R * 1.7);
-    sg.addColorStop(0.00, "rgba(2,6,16,0.85)"); sg.addColorStop(0.5, "rgba(2,6,16,0.42)");
-    sg.addColorStop(0.82, "rgba(2,6,16,0.06)"); sg.addColorStop(1.00, "rgba(2,6,16,0)");
+    var sg = sc.createRadialGradient(R * 1.5, R, R * 0.1, R * 1.5, R, R * 1.9);
+    sg.addColorStop(0.00, "rgba(2,5,14,0.9)"); sg.addColorStop(0.42, "rgba(2,5,14,0.52)");
+    sg.addColorStop(0.70, "rgba(2,5,14,0.12)"); sg.addColorStop(1.00, "rgba(2,5,14,0)");
     sc.save(); sc.beginPath(); sc.arc(R, R, R, 0, TAU); sc.clip();
     sc.fillStyle = sg; sc.fillRect(0, 0, R * 2, R * 2); sc.restore();
 
-    var LW = lo ? 320 : 512, LH = lo ? 160 : 256;
+    /* ---------- continents strip — mid-latitudes only (poles are baked into the disc) ---------- */
+    var LW = lo ? 360 : 560, LH = lo ? 180 : 280;
     LSTRIP = LW;
+    // [ x(long 0..1), y(lat 0.16..0.84), w, h, colour ]
     var LAND = [
-      [0.17, 0.30, 0.11, 0.20, "#3f7a3a"], [0.13, 0.42, 0.06, 0.10, "#4c7f3c"],
-      [0.27, 0.66, 0.07, 0.22, "#3c7838"], [0.50, 0.34, 0.05, 0.12, "#6b8a3f"],
-      [0.54, 0.55, 0.09, 0.26, "#7c7a3c"], [0.68, 0.36, 0.17, 0.22, "#5c7f3a"],
-      [0.83, 0.70, 0.07, 0.10, "#8a6f3c"], [0.44, 0.60, 0.03, 0.05, "#6b8a3f"]
+      [0.150, 0.34, 0.100, 0.15, "#4c7a3e"], [0.108, 0.44, 0.052, 0.09, "#5a8347"],
+      [0.190, 0.30, 0.048, 0.07, "#7a8a55"], [0.088, 0.27, 0.030, 0.05, "#e9eef6"],
+      [0.252, 0.62, 0.058, 0.17, "#3f7a3c"], [0.235, 0.54, 0.028, 0.06, "#4c7a3e"],
+      [0.500, 0.35, 0.044, 0.09, "#6f8a44"], [0.476, 0.31, 0.026, 0.045, "#7a8a55"],
+      [0.535, 0.55, 0.074, 0.21, "#8a7a42"], [0.548, 0.40, 0.038, 0.07, "#9a8348"],
+      [0.660, 0.34, 0.140, 0.17, "#5c7f3c"], [0.700, 0.29, 0.048, 0.06, "#7a8a55"],
+      [0.632, 0.47, 0.034, 0.05, "#8a7a42"], [0.735, 0.47, 0.044, 0.06, "#5c7f3c"],
+      [0.800, 0.44, 0.030, 0.045, "#4c7a3e"], [0.860, 0.70, 0.060, 0.09, "#9a7a44"],
+      [0.585, 0.66, 0.020, 0.04, "#4c7a3e"]
     ];
     function blob(ctx, xp, yp, rw, rh, col){
-      ctx.fillStyle = col; ctx.beginPath();
-      for (var k = 0; k <= 14; k++){
-        var a = k / 14 * TAU, wob = 0.62 + 0.5 * rnd(k * 7.7 + xp * 0.9 + yp * 0.13);
+      ctx.beginPath();
+      for (var k = 0; k <= 16; k++){
+        var a = k / 16 * TAU;
+        var wob = 0.58 + 0.55 * rnd(k * 6.3 + xp * 0.7 + yp * 0.19);
         var xx = xp + Math.cos(a) * rw * wob, yy = yp + Math.sin(a) * rh * wob;
         if (k === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
       }
-      ctx.closePath(); ctx.fill();
+      ctx.closePath();
+      ctx.fillStyle = col; ctx.fill();
+      ctx.strokeStyle = "rgba(20,45,30,0.32)"; ctx.lineWidth = Math.max(1, rw * 0.045); ctx.stroke();
+      ctx.save(); ctx.clip();
+      var hg = ctx.createRadialGradient(xp - rw * 0.3, yp - rh * 0.3, 0, xp, yp, Math.max(rw, rh));
+      hg.addColorStop(0, "rgba(205,222,172,0.22)"); hg.addColorStop(1, "rgba(88,66,38,0.18)");
+      ctx.fillStyle = hg; ctx.fillRect(xp - rw * 1.6, yp - rh * 1.6, rw * 3.2, rh * 3.2);
+      ctx.restore();
     }
     earthLand = mkC(LW * 2, LH);
     var lc = earthLand.getContext("2d");
@@ -2966,40 +3035,99 @@
         var L = LAND[q];
         blob(lc, ox + L[0] * LW, L[1] * LH, L[2] * LW, L[3] * LH, L[4]);
       }
-      for (var isl = 0; isl < (lo ? 6 : 12); isl++){
-        lc.fillStyle = "#5a8340";
+      for (var isl = 0; isl < (lo ? 8 : 16); isl++){
+        lc.fillStyle = "rgba(80,120,70,0.9)";
         lc.beginPath();
-        lc.arc(ox + rnd(isl * 3.3 + 1) * LW, (0.2 + rnd(isl * 5.1 + 2) * 0.6) * LH,
-               2 + rnd(isl * 2.2 + 3) * (lo ? 4 : 7), 0, TAU);
+        lc.arc(ox + rnd(isl * 3.3 + 1) * LW, (0.24 + rnd(isl * 5.1 + 2) * 0.52) * LH,
+               1.5 + rnd(isl * 2.2 + 3) * (lo ? 3 : 5), 0, TAU);
         lc.fill();
       }
     }
+    // fade the top/bottom of the strip to nothing so it never seams into the baked poles
+    var vf = lc.createLinearGradient(0, 0, 0, LH);
+    vf.addColorStop(0.00, "rgba(0,0,0,1)"); vf.addColorStop(0.12, "rgba(0,0,0,0)");
+    vf.addColorStop(0.88, "rgba(0,0,0,0)"); vf.addColorStop(1.00, "rgba(0,0,0,1)");
+    lc.globalCompositeOperation = "destination-out";
+    lc.fillStyle = vf; lc.fillRect(0, 0, LW * 2, LH);
+    lc.globalCompositeOperation = "source-over";
 
+    /* ---------- clouds strip ---------- */
     earthCloud = mkC(LW * 2, LH);
     var cc = earthCloud.getContext("2d");
-    for (var cp = 0; cp < (lo ? 22 : 44); cp++){
-      var pxp = rnd(cp * 4.7 + 1) * LW * 2, pyp = (0.08 + rnd(cp * 8.3 + 2) * 0.84) * LH;
-      var prr = (lo ? 10 : 16) + rnd(cp * 2.9 + 3) * (lo ? 16 : 30);
-      var pg2 = cc.createRadialGradient(pxp, pyp, 0, pxp, pyp, prr);
-      pg2.addColorStop(0, "rgba(255,255,255,0.7)"); pg2.addColorStop(0.5, "rgba(255,255,255,0.28)");
+    for (var cp = 0; cp < (lo ? 24 : 48); cp++){
+      var pxp = rnd(cp * 4.7 + 1) * LW * 2, pyp = (0.06 + rnd(cp * 8.3 + 2) * 0.88) * LH;
+      var prr = (lo ? 8 : 12) + rnd(cp * 2.9 + 3) * (lo ? 14 : 26);
+      var elong = 1 + rnd(cp * 3.1 + 4) * 2.2;
+      var pg2 = cc.createRadialGradient(0, 0, 0, 0, 0, prr);
+      pg2.addColorStop(0, "rgba(255,255,255,0.6)"); pg2.addColorStop(0.5, "rgba(255,255,255,0.22)");
       pg2.addColorStop(1, "rgba(255,255,255,0)");
-      cc.fillStyle = pg2; cc.beginPath(); cc.arc(pxp, pyp, prr, 0, TAU); cc.fill();
+      cc.save(); cc.translate(pxp, pyp); cc.scale(elong, 1);
+      cc.fillStyle = pg2; cc.beginPath(); cc.arc(0, 0, prr, 0, TAU); cc.fill();
+      cc.restore();
     }
+    var cvf = cc.createLinearGradient(0, 0, 0, LH);
+    cvf.addColorStop(0.00, "rgba(0,0,0,1)"); cvf.addColorStop(0.10, "rgba(0,0,0,0)");
+    cvf.addColorStop(0.90, "rgba(0,0,0,0)"); cvf.addColorStop(1.00, "rgba(0,0,0,1)");
+    cc.globalCompositeOperation = "destination-out";
+    cc.fillStyle = cvf; cc.fillRect(0, 0, LW * 2, LH);
+    cc.globalCompositeOperation = "source-over";
 
-    var MR = 96;
+    /* ---------- moon ---------- */
+    var MR = 110;
     moonBase = mkC(MR * 2, MR * 2);
     var mc = moonBase.getContext("2d");
-    var mg = mc.createRadialGradient(MR * 0.68, MR * 0.64, MR * 0.1, MR, MR, MR * 1.05);
-    mg.addColorStop(0, "#c9c9cf"); mg.addColorStop(0.55, "#9a9aa2"); mg.addColorStop(1, "#5c5c66");
+    var mg = mc.createRadialGradient(MR * 0.66, MR * 0.6, MR * 0.08, MR, MR * 1.05, MR * 1.5);
+    mg.addColorStop(0, "#d3d3d9"); mg.addColorStop(0.5, "#a5a5ad");
+    mg.addColorStop(0.82, "#75757e"); mg.addColorStop(1, "#4a4a54");
     mc.fillStyle = mg; mc.beginPath(); mc.arc(MR, MR, MR, 0, TAU); mc.fill();
     mc.save(); mc.beginPath(); mc.arc(MR, MR, MR, 0, TAU); mc.clip();
-    for (var cr = 0; cr < 9; cr++){
-      var crx = MR + (rnd(cr * 3.7 + 1) - 0.5) * MR * 1.5, cry = MR + (rnd(cr * 6.1 + 2) - 0.5) * MR * 1.5;
-      var crr = MR * (0.06 + rnd(cr * 2.3 + 3) * 0.16);
-      mc.fillStyle = "rgba(70,70,80,0.45)"; mc.beginPath(); mc.arc(crx, cry, crr, 0, TAU); mc.fill();
-      mc.fillStyle = "rgba(210,210,220,0.35)"; mc.beginPath(); mc.arc(crx - crr * 0.3, cry - crr * 0.3, crr * 0.7, 0, TAU); mc.fill();
+    for (var cr = 0; cr < 14; cr++){
+      var crx = MR + (rnd(cr * 3.7 + 1) - 0.5) * MR * 1.7, cry = MR + (rnd(cr * 6.1 + 2) - 0.5) * MR * 1.7;
+      var crr = MR * (0.04 + rnd(cr * 2.3 + 3) * 0.14);
+      mc.fillStyle = "rgba(60,60,70,0.4)"; mc.beginPath(); mc.arc(crx, cry, crr, 0, TAU); mc.fill();
+      mc.fillStyle = "rgba(220,220,230,0.3)"; mc.beginPath(); mc.arc(crx - crr * 0.28, cry - crr * 0.28, crr * 0.75, 0, TAU); mc.fill();
     }
+    mc.fillStyle = "rgba(70,70,82,0.3)";
+    mc.beginPath(); mc.ellipse(MR * 0.85, MR * 0.82, MR * 0.4, MR * 0.3, 0.4, 0, TAU); mc.fill();
     mc.restore();
+
+    earthFrameKey = "";   // force the composited sprite to rebuild against the fresh textures
+  }
+
+  // sat marker — module scope so it isn't re-created every frame
+  function paintSat(p){
+    bctx.strokeStyle = "rgba(180,210,240,0.5)"; bctx.lineWidth = 1;
+    bctx.beginPath(); bctx.moveTo(p[0] - 3, p[1]); bctx.lineTo(p[0] + 3, p[1]);
+    bctx.moveTo(p[0], p[1] - 3); bctx.lineTo(p[0], p[1] + 3); bctx.stroke();
+    bctx.fillStyle = "rgba(235,245,255,0.95)";
+    bctx.beginPath(); bctx.arc(p[0], p[1], 1.6, 0, TAU); bctx.fill();
+  }
+
+  /* Compose the spinning, sun-lit globe into an offscreen sprite once — the per-frame
+     path then only blits it, so hovering the name never triggers a clip + gradient chain. */
+  function composeEarth(t, sunAng){
+    var FR = MID() ? 132 : 200;
+    if (!earthFrame || earthFrame.width !== FR * 2) earthFrame = mkC(FR * 2, FR * 2);
+    var f = earthFrame.getContext("2d");
+    f.setTransform(1, 0, 0, 1, 0, 0);
+    f.clearRect(0, 0, FR * 2, FR * 2);
+    f.save();
+    f.beginPath(); f.arc(FR, FR, FR, 0, TAU); f.clip();
+    f.drawImage(earthBase, 0, 0, FR * 2, FR * 2);
+    var loff = REDUCED ? 0 : Math.floor((t * 0.006) % LSTRIP);
+    var coff = REDUCED ? 0 : Math.floor((t * 0.010) % LSTRIP);
+    f.globalAlpha = 0.94;
+    f.drawImage(earthLand, loff, 0, LSTRIP, earthLand.height, 0, 0, FR * 2, FR * 2);
+    if (!MID()){
+      f.globalAlpha = 0.42;
+      f.drawImage(earthCloud, coff, 0, LSTRIP, earthCloud.height, 0, 0, FR * 2, FR * 2);
+    }
+    f.globalAlpha = 1;
+    f.translate(FR, FR); f.rotate((sunAng || Math.PI) - Math.PI);
+    f.drawImage(earthShade, -FR, -FR, FR * 2, FR * 2);
+    f.restore();
+    f.strokeStyle = "rgba(155,212,255,0.5)"; f.lineWidth = Math.max(1, FR * 0.03);
+    f.beginPath(); f.arc(FR, FR, FR * 0.985, (sunAng || 0) - 1.35, (sunAng || 0) + 1.35); f.stroke();
   }
 
   function drawEarth(cx, cy, r, t, pe, idle, sunAng){
@@ -3012,6 +3140,12 @@
     }
     if (!earthBase) buildEarth();
     var lo = MID();
+
+    // rebuild the sprite only when the spin phase or sun angle has moved a visible amount
+    var spinStep = REDUCED ? 0 : Math.floor((t * 0.006) / 0.55);
+    var sunStep = Math.round((sunAng || 0) * 10);
+    var key = (lo ? "m" : "d") + spinStep + "_" + sunStep;
+    if (!earthFrame || key !== earthFrameKey){ composeEarth(t, sunAng); earthFrameKey = key; }
 
     var gs = r * 2.9;
     bctx.drawImage(earthGlow, cx - gs / 2, cy - gs / 2, gs, gs);
@@ -3026,34 +3160,9 @@
         (Math.sin(a) < 0 ? back : front).push([cx + ex * tc - ey * ts, cy + ex * ts + ey * tc]);
       }
     }
-    function paintSat(p){
-      bctx.strokeStyle = "rgba(180,210,240,0.5)"; bctx.lineWidth = 1;
-      bctx.beginPath(); bctx.moveTo(p[0] - 3, p[1]); bctx.lineTo(p[0] + 3, p[1]);
-      bctx.moveTo(p[0], p[1] - 3); bctx.lineTo(p[0], p[1] + 3); bctx.stroke();
-      bctx.fillStyle = "rgba(235,245,255,0.95)";
-      bctx.beginPath(); bctx.arc(p[0], p[1], 1.6, 0, TAU); bctx.fill();
-    }
     for (var bi = 0; bi < back.length; bi++) paintSat(back[bi]);
 
-    bctx.save();
-    bctx.beginPath(); bctx.arc(cx, cy, r, 0, TAU); bctx.clip();
-    bctx.drawImage(earthBase, cx - r, cy - r, r * 2, r * 2);
-    var loff = REDUCED ? 0 : Math.floor((t * 0.006) % LSTRIP);
-    var coff = REDUCED ? 0 : Math.floor((t * 0.010) % LSTRIP);
-    bctx.globalAlpha = 0.92;
-    bctx.drawImage(earthLand, loff, 0, LSTRIP, earthLand.height, cx - r, cy - r, r * 2, r * 2);
-    if (!lo){
-      bctx.globalAlpha = 0.4;
-      bctx.drawImage(earthCloud, coff, 0, LSTRIP, earthCloud.height, cx - r, cy - r, r * 2, r * 2);
-    }
-    bctx.globalAlpha = 1;
-    bctx.translate(cx, cy); bctx.rotate((sunAng || Math.PI) - Math.PI);
-    bctx.drawImage(earthShade, -r, -r, r * 2, r * 2);
-    bctx.restore();
-
-    bctx.strokeStyle = "rgba(150,205,255,0.45)";
-    bctx.lineWidth = Math.max(1, r * 0.03);
-    bctx.beginPath(); bctx.arc(cx, cy, r * 0.99, (sunAng || 0) - 1.35, (sunAng || 0) + 1.35); bctx.stroke();
+    bctx.drawImage(earthFrame, cx - r, cy - r, r * 2, r * 2);
 
     for (var fi = 0; fi < front.length; fi++) paintSat(front[fi]);
 
