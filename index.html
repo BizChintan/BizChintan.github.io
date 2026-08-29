@@ -1196,7 +1196,9 @@
     .timeline li{ padding:0 0 0 40px; }
     .tl-marker{ padding-top:0; }
     .tl-year{ position:static; margin-bottom:8px; }
-    .tl-dot{ left:-32px; top:4px; }
+    /* centre the dot on the vertical spine (::before is at left:9px, width:2px -> centre 10px;
+       marker starts at 40px, so dot left = 10 - 8(half dot) - 40 = -38px) */
+    .tl-dot{ left:-38px; top:4px; }
     .tl-body{ margin-top:0; }
     .tl-title{ letter-spacing:.04em; }
     .tl-body::after{ opacity:1; transform:none; }
@@ -1332,7 +1334,7 @@
 
   <!-- ========== EXPERIENCE ========== -->
   <section class="timeline-sec" id="experience" aria-labelledby="tl-h">
-    <h2 id="tl-h" class="sec-h">◦ Flight Log — Deployment History</h2>
+    <h2 id="tl-h" class="sec-h">◦ Deployment History</h2>
     <p class="sec-sub">Three deployments · select a marker to pull the log entry</p>
     <ol class="timeline" id="timeline" role="list"></ol>
   </section>
