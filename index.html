@@ -3266,7 +3266,7 @@
     var eNatR = PLANETS[2].wr * scale * BODY;
     var earthR = eNatR + (eBigR - eNatR) * (1 - Math.min(1, pe / 0.42));
     // Earth rides in the right-most ~30% of the viewport, independent of the name column
-    var eTX = Math.max(bw * 0.72, Math.min(bw - eBigR - 16, bw * 0.84));
+    var eTX = Math.max(bw * 0.66, Math.min(bw - eBigR - 16, bw * 0.77));
     var eTY = nameGeo.w
       ? Math.max(eBigR + 58, Math.min(bh - eBigR - 20, nbTop + nameGeo.h * (SMALL() ? 0.88 : 0.44)))
       : bh * 0.4;
