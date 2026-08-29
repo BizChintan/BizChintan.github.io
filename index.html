@@ -483,9 +483,14 @@
      clickable/focusable, but the containers pass clicks through.
      Motion is CSS-keyframe (compositor-only) — no JS loop, no listeners
      beyond each button's click; disabled wholesale by reduced-motion. */
-  .spacefacts, .planet-hits{
+  .spacefacts{
     position:fixed; inset:0; z-index:3; pointer-events:none;
   }
+  /* planet labels live in the page's own flow (inside #invertwrap), behind the
+     content — so they orbit with the solar system yet page sections cover them
+     as they scroll past, same fix as the Sun counter. Each label is
+     position:absolute and placed in document space by transform. */
+  .planet-hits{ position:absolute; top:0; left:0; z-index:1; }
   .spacefacts .spacefact, .planet-hits .planet-hit{ pointer-events:auto; }
 
   @keyframes factDrift{
@@ -507,18 +512,31 @@
   .spacefact:focus-visible{ opacity:.9; box-shadow:0 0 0 1px var(--line-2); }
   .spacefact[aria-expanded="true"]{ opacity:.92; color:var(--teal); }
 
+  /* a small name-tag that rides along with each planet; click -> fact popover */
   .planet-hit{
-    position:fixed; left:0; top:0; width:34px; height:34px;
-    margin:0; padding:0; border:0; background:none; cursor:pointer;
-    border-radius:50%;
+    position:absolute; left:0; top:0;
+    display:inline-flex; align-items:center;
+    margin:0; padding:4px 6px; border:0; background:none; cursor:pointer;
+    font-family:var(--font-mono); font-size:9px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); white-space:nowrap;
+    opacity:.4;
+    transition:opacity .2s var(--ease), color .2s var(--ease);
+  }
+  .planet-hit::before{ content:"· "; color:var(--teal); opacity:.7; }
+  .planet-hit:hover, .planet-hit:focus-visible,
+  .planet-hit[aria-expanded="true"]{ opacity:1; color:var(--teal); outline:none; z-index:2; }
+  .planet-hit:focus-visible{ box-shadow:0 0 0 1px var(--line-2); }
+
+  /* the Sun target is not a label — keep it a clean invisible circle */
+  .sun-hit{
+    padding:0; border-radius:50%; font-size:0;
     transition:box-shadow .2s var(--ease), background .2s var(--ease);
   }
-  .planet-hit:hover, .planet-hit:focus-visible{
-    outline:none;
+  .sun-hit::before{ content:none; }
+  .sun-hit:hover, .sun-hit:focus-visible{
     background:radial-gradient(circle, rgba(47,227,196,0.18), transparent 70%);
     box-shadow:0 0 0 1px rgba(47,227,196,0.6);
   }
-  .planet-hit[aria-expanded="true"]{ box-shadow:0 0 0 1px var(--teal); }
 
   /* shared lightweight popover for space facts + planet facts —
      same visual language as .readout, lighter than the .overlay modals */
@@ -543,10 +561,11 @@
   @media (max-width:640px){
     .spacefact{ font-size:9px; letter-spacing:.16em; opacity:.14; }
     .spacefact.sf-hide-sm{ display:none; }
+    .planet-hit{ font-size:8px; letter-spacing:.08em; opacity:.32; padding:3px 5px; }
   }
-  @media (pointer:coarse){ .planet-hit{ width:44px; height:44px; } }
+  @media (pointer:coarse){ .planet-hit{ min-height:44px; padding-left:10px; padding-right:10px; } }
   .sun-hit{ width:64px; height:64px; }
-  @media (pointer:coarse){ .sun-hit{ width:76px; height:76px; } }
+  @media (pointer:coarse){ .sun-hit{ width:76px; height:76px; min-height:0; } }
 
   /* ---------- NEGATIVE COLOUR GRADING (Sun easter egg) ----------
      The invert filter is applied to exactly ONE element — #invertwrap,
@@ -1146,7 +1165,6 @@
 <div class="scanlines" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
 <div class="spacefacts" id="spacefacts" role="group" aria-label="Ambient space facts"></div>
-<div class="planet-hits" id="planetHits" role="group" aria-label="Solar system planets"></div>
 <div id="eggfade" aria-hidden="true"></div>
 <!-- Egg callout kept OUTSIDE #invertwrap so it stays legible (uninverted) -->
 <div class="egg-popup" id="eggPopup" role="status" hidden>
@@ -1170,9 +1188,10 @@
 <!-- everything that receives the negative-colour-grading filter lives inside #invertwrap
      (the fixed canvas #bg stays outside so it isn't trapped by the filter's containing block) -->
 <div id="invertwrap">
-<!-- Sun tap-counter lives in the page's own flow (see .sun-counter) so it scrolls
-     away with the content and can't overlay other sections -->
+<!-- Sun tap-counter + planet labels live in the page's own flow (see .sun-counter /
+     .planet-hits) so they ride with the solar system yet scroll away with the content -->
 <div class="sun-counter mono" id="sunCounter" hidden>0 <b>/ 100</b></div>
+<div class="planet-hits" id="planetHits" role="group" aria-label="Solar system planets"></div>
 <header class="topbar">
   <span class="wordmark">CONTROL TOWER</span>
   <span class="sep"></span>
@@ -2395,9 +2414,10 @@
     b.className = "planet-hit";
     b.hidden = true;
     b._vis = false;
+    b.textContent = pf.name;                    // the tag shows the planet name
     b.setAttribute("aria-haspopup", "dialog");
     b.setAttribute("aria-expanded", "false");
-    b.setAttribute("aria-label", pf.name + " — reveal a fact about " + pf.name);
+    b.setAttribute("aria-label", pf.name + " — planet fact");
     b.addEventListener("click", function(){ openFact(pf.name.toUpperCase(), pf.fact, b); });
     planetLayer.appendChild(b);
     return b;
@@ -2852,9 +2872,10 @@
 
     var sunR = Math.max(3, SUN_WR * scale);
     sunScreen.x = cx; sunScreen.y = cy; sunScreen.r = sunR;
+    var docShift = (window.pageYOffset || 0);   // .planet-hits is now absolute inside #invertwrap
     if (sunHitBtn && EGG.state === "idle"){
       sunHitBtn.style.transform =
-        "translate3d(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px,0) translate(-50%,-50%)";
+        "translate3d(" + cx.toFixed(1) + "px," + (cy + docShift).toFixed(1) + "px,0) translate(-50%,-50%)";
     }
     if (sunCounterEl && EGG.state === "idle"){
       // counter is position:absolute inside #invertwrap → place it in DOCUMENT space
@@ -2930,7 +2951,8 @@
       var orbR = p.r * scale;
       if (orbR <= minDim * 2.7){
         var ang = p.a0 + (REDUCED ? 0 : t * 0.00013 * p.spin);
-        var px = cx + Math.cos(ang) * orbR;
+        var ca = Math.cos(ang);
+        var px = cx + ca * orbR;
         var py = cy + Math.sin(ang) * orbR * 0.985;
         if (!(px < -70 || px > bw + 70 || py < -70 || py > bh + 70)){
           var pr = Math.max(1.1, Math.min(180, p.wr * scale));
@@ -2962,9 +2984,17 @@
           }
 
           if (hitsLive){
-            // compositor-only: only the translate changes frame to frame
+            // the name-tag rides just outside the planet disc, on whichever side
+            // faces away from the sun — and flips inward near a screen edge.
+            // Position is in DOCUMENT space (see .planet-hits) so it scrolls too.
+            var gap = pr + 6;
+            var side = ca >= 0 ? 1 : -1;
+            if (side > 0 && px + gap + 96 > bw) side = -1;
+            else if (side < 0 && px - gap - 96 < 0) side = 1;
+            var lx = px + side * gap;
+            var la = side > 0 ? " translate(0,-50%)" : " translate(-100%,-50%)";
             planetBtns[j].style.transform =
-              "translate3d(" + px.toFixed(1) + "px," + py.toFixed(1) + "px,0) translate(-50%,-50%)";
+              "translate3d(" + lx.toFixed(1) + "px," + (py + docShift).toFixed(1) + "px,0)" + la;
             vis = true;
           }
           if (snap) snap.push({ x: px, y: py, r: pr, col: p.col, pidx: j });
