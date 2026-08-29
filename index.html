@@ -831,7 +831,8 @@
     padding:0 0 34px;
   }
   .overlay.closing .role-panel,
-  .overlay.closing .cert-modal{ animation:pop .16s var(--ease) reverse forwards; }
+  .overlay.closing .cert-modal,
+  .overlay.closing .resume-modal{ animation:pop .16s var(--ease) reverse forwards; }
   .rp-hd{
     position:sticky; top:0; z-index:2;
     display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
@@ -1164,6 +1165,51 @@
     .cert-desc{ font-size:14.5px; }
   }
 
+  /* ---------- RÉSUMÉ VIEWER ---------- */
+  .resume-modal{
+    width:min(1100px, 82vw); height:min(1300px, 86vh);
+    display:flex; flex-direction:column;
+    background:linear-gradient(170deg,var(--panel-2),var(--panel));
+    border:1px solid var(--teal);
+    box-shadow:0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(47,227,196,0.14);
+    animation:pop .28s var(--ease);
+    overflow:hidden;
+  }
+  .resume-modal-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:12px 12px 12px 18px; flex:none;
+    background:var(--panel-2); border-bottom:1px solid var(--line);
+  }
+  .resume-modal-title{
+    font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--teal);
+  }
+  .resume-modal-doc{ flex:1; min-height:0; background:#2b2f36; }
+  .resume-modal-doc iframe{ display:block; width:100%; height:100%; border:0; }
+  .resume-modal-foot{
+    flex:none; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    padding:14px 18px; border-top:1px solid var(--line); background:var(--panel-2);
+  }
+  .resume-dl{
+    display:inline-flex; align-items:center; gap:8px;
+    text-decoration:none; background:var(--teal); color:#02110e;
+    padding:12px 20px; min-height:44px;
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    clip-path:polygon(0 0,100% 0,100% 100%,12px 100%,0 calc(100% - 12px));
+    transition:transform .2s var(--ease), background .2s var(--ease);
+  }
+  .resume-dl:hover, .resume-dl:focus-visible{ transform:translateY(-2px); background:#5ff0d8; }
+  .resume-newtab{
+    text-decoration:none; color:var(--ink-faint);
+    font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+    transition:color .2s var(--ease);
+  }
+  .resume-newtab:hover, .resume-newtab:focus-visible{ color:var(--teal); }
+
+  @media (max-width:620px){
+    .resume-modal{ width:100%; height:92vh; }
+    .resume-modal-foot{ gap:12px; padding:12px 16px; }
+  }
+
   /* ---------- perf: will-change is never left on idle elements ----------
      The skill nodes no longer drift (the per-frame rAF loop was removed),
      so they carry no will-change at all. .role-panel / .badge are promoted
@@ -1299,7 +1345,7 @@
   <span class="sep"></span>
   <span class="coord">12.9716&deg;N &middot; 77.5946&deg;E</span>
   <span class="clock" id="clock">--:--:-- IST</span>
-  <a class="resume-btn" href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf">
+  <a class="resume-btn" data-resume href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf" aria-haspopup="dialog" aria-controls="resumeOverlay">
     <span class="rb-ic" aria-hidden="true">&#x2913;</span>Résumé PDF
   </a>
   <button type="button" class="sound-toggle" id="soundToggle" aria-pressed="false" aria-label="Sound">
@@ -1404,7 +1450,7 @@
 <footer class="foot mono">
   <span>Chintan Dhamecha · Bangalore, KA, IND · Signal nominal</span>
   <span class="foot-actions">
-    <a class="resume-btn" href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf">
+    <a class="resume-btn" data-resume href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf" aria-haspopup="dialog" aria-controls="resumeOverlay">
       <span class="rb-ic" aria-hidden="true">&#x2913;</span>Résumé PDF
     </a>
     <button id="footContact" aria-haspopup="dialog" aria-controls="contactOverlay">Open comms ▸</button>
@@ -1433,7 +1479,7 @@
           <li><span class="val"><span class="k">Location</span><span>Bangalore, Karnataka, India</span></span></li>
         </ul>
         <div class="badge-barcode" aria-hidden="true"></div>
-        <a class="badge-resume" href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf">&#x2913; Download résumé (PDF)</a>
+        <a class="badge-resume" data-resume href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf" aria-haspopup="dialog" aria-controls="resumeOverlay">&#x2913; View résumé</a>
         <div class="badge-ft">
           <button type="button" id="flipToBack">Record ▸</button>
           <button type="button" class="close-modal" data-close>Dismiss ✕</button>
@@ -1461,7 +1507,7 @@
             <li><b>Unisys India</b> — Service Support Representative · Aug 2019 – May 2021</li>
           </ul>
         </div>
-        <a class="badge-resume" href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf">&#x2913; Download résumé (PDF)</a>
+        <a class="badge-resume" data-resume href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf" aria-haspopup="dialog" aria-controls="resumeOverlay">&#x2913; View résumé</a>
         <div class="badge-ft">
           <button type="button" id="flipToFront">◂ Back to ID</button>
           <button type="button" class="close-modal" data-close>Dismiss ✕</button>
@@ -1506,6 +1552,23 @@
       <div class="cert-modal-foot">
         <a class="cert-linkedin mono" id="certLinkedin" href="https://www.linkedin.com/in/chintan-dhamecha/details/certifications/" target="_blank" rel="noopener">View on LinkedIn ↗</a>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== RÉSUMÉ VIEWER ========== -->
+<div class="overlay" id="resumeOverlay" hidden>
+  <div class="resume-modal" role="dialog" aria-modal="true" aria-labelledby="resumeModalTitle">
+    <div class="resume-modal-bar">
+      <span class="resume-modal-title mono" id="resumeModalTitle">Résumé — Chintan Dhamecha</span>
+      <button type="button" class="icon-btn close-modal" data-close aria-label="Close résumé">✕</button>
+    </div>
+    <div class="resume-modal-doc">
+      <iframe id="resumeFrame" title="Résumé — Chintan Dhamecha (PDF preview)" src="about:blank"></iframe>
+    </div>
+    <div class="resume-modal-foot">
+      <a class="resume-dl mono" id="resumeDownload" href="assets/Chintan-Dhamecha-Resume.pdf" download="Chintan-Dhamecha-Resume.pdf">&#x2913; Download PDF</a>
+      <a class="resume-newtab mono" href="assets/Chintan-Dhamecha-Resume.pdf" target="_blank" rel="noopener">Open in new tab ↗</a>
     </div>
   </div>
 </div>
@@ -2017,6 +2080,9 @@
     if (overlay === certOverlay){
       certButtons.forEach(function(b){ b.setAttribute("aria-expanded", "false"); });
     }
+    if (overlay === resumeOverlay && resumeFrame){
+      resumeFrame.src = "about:blank";   // stop the PDF rendering while the viewer is closed
+    }
   }
 
   function onModalKey(e){
@@ -2266,6 +2332,25 @@
     certModal.scrollTop = 0;
     openOverlay(certOverlay, opener, certModal.querySelector(".close-modal"));
   }
+
+  /* ---- résumé viewer: the "Résumé" buttons (top bar, footer, ID card) open the
+     PDF in a modal with a download control at the bottom; modified clicks still
+     download straight to disk via the anchors' own href/download attributes ---- */
+  var resumeOverlay = document.getElementById("resumeOverlay");
+  var resumeFrame   = document.getElementById("resumeFrame");
+  var RESUME_SRC    = "assets/Chintan-Dhamecha-Resume.pdf#toolbar=0&navpanes=0&view=FitH";
+
+  function openResume(opener){
+    if (resumeFrame && resumeFrame.getAttribute("src") !== RESUME_SRC) resumeFrame.src = RESUME_SRC;
+    openOverlay(resumeOverlay, opener, resumeOverlay.querySelector(".close-modal"));
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-resume]"), function(a){
+    a.addEventListener("click", function(e){
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;  // keep new-tab / direct-download shortcuts
+      e.preventDefault();
+      openResume(a);
+    });
+  });
 
   /* ============================================================
      SKILL CONSTELLATION
