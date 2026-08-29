@@ -2638,7 +2638,7 @@
   var factTrigger  = null;
   var factPopW = 0, factPopH = 0;   // cached popover size — for the per-frame chip follow
 
-  function placePopover(pop, anchor){
+  function placePopover(pop, anchor, floatSmall){
     pop.style.visibility = "hidden";
     pop.hidden = false;
     var rr = pop.getBoundingClientRect();
@@ -2648,7 +2648,7 @@
     if (left < m) left = Math.max(m, (window.innerWidth - rr.width) / 2);
     var top = anchor.top + (anchor.height || 0) / 2 - rr.height / 2;
     top = Math.max(m, Math.min(window.innerHeight - m - rr.height, top));
-    if (SMALL()){
+    if (SMALL() && !floatSmall){          // egg popup still docks to the bottom on phones
       left = (window.innerWidth - rr.width) / 2;
       top = window.innerHeight - rr.height - m;
     }
@@ -2666,7 +2666,7 @@
     factpopText.textContent = text;
     var anchor = triggerEl ? triggerEl.getBoundingClientRect()
       : { left:window.innerWidth/2, right:window.innerWidth/2, top:window.innerHeight/2, height:0 };
-    placePopover(factpop, anchor);
+    placePopover(factpop, anchor, true);   // float beside the trigger on phones too
     var fr = factpop.getBoundingClientRect();
     factPopW = fr.width; factPopH = fr.height;
     emergeOrigin(factpop, {                             // grow out of the tapped label / planet
@@ -2675,7 +2675,8 @@
     });
     factpopClose.focus();
     document.addEventListener("keydown", onFactKey, true);
-    setTimeout(function(){ document.addEventListener("click", onFactOutside, true); }, 0);
+    // pointerdown (not click) so a tap anywhere outside the box dismisses it reliably on touch
+    setTimeout(function(){ document.addEventListener("pointerdown", onFactOutside, true); }, 0);
     navSync();
   }
   function closeFact(returnFocus){
@@ -2688,14 +2689,15 @@
       factTrigger = null;
     }
     document.removeEventListener("keydown", onFactKey, true);
-    document.removeEventListener("click", onFactOutside, true);
+    document.removeEventListener("pointerdown", onFactOutside, true);
     navSync();
   }
   function onFactKey(e){ if (e.key === "Escape"){ e.preventDefault(); closeFact(true); } }
   function onFactOutside(e){
-    if (factpop.contains(e.target)) return;
-    if (e.target.closest(".spacefact, .planet-hit")) return; // their own handlers
-    closeFact(false);
+    var t = e.target;
+    if (factpop.contains(t)) return;                        // tap inside the box — keep it open
+    if (t.closest && t.closest(".spacefact, .planet-hit")) return; // tapping another rock/planet — its own handler swaps
+    closeFact(false);                                       // tap anywhere else — dismiss
   }
   factpopClose.addEventListener("click", function(){ closeFact(true); });
 
@@ -2786,19 +2788,14 @@
       factPopW = fr.width; factPopH = fr.height;
       if (!factPopW) return;
     }
+    // float beside the rock on every screen size (phone included), clamped to the viewport
     var m = 12, sz = s.w || 16;
     var ax = s.x + 9, ay = s.y + 9;                 // asteroid box top-left on screen (9 = .spacefact padding)
-    var left, top;
-    if (SMALL()){
-      left = (window.innerWidth - factPopW) / 2;
-      top  = window.innerHeight - factPopH - m;
-    } else {
-      left = ax + sz + m;                            // prefer to the right of the rock
-      if (left + factPopW > window.innerWidth - m) left = ax - m - factPopW;   // else to the left
-      left = Math.max(m, Math.min(window.innerWidth  - m - factPopW, left));
-      top  = ay + sz / 2 - factPopH / 2;
-      top  = Math.max(m, Math.min(window.innerHeight - m - factPopH, top));
-    }
+    var left = ax + sz + m;                          // prefer the right of the rock
+    if (left + factPopW > window.innerWidth - m) left = ax - m - factPopW;   // else the left
+    left = Math.max(m, Math.min(window.innerWidth  - m - factPopW, left));
+    var top = ay + sz / 2 - factPopH / 2;
+    top = Math.max(m, Math.min(window.innerHeight - m - factPopH, top));
     factpop.style.left = Math.round(left) + "px";
     factpop.style.top  = Math.round(top) + "px";
   }
@@ -2912,7 +2909,7 @@
         rzRaf = 0;
         measureName();
         if (!readout.hidden && readoutNode) positionReadout(readoutNode);
-        if (!factpop.hidden && factTrigger){ factPopW = 0; placePopover(factpop, factTrigger.getBoundingClientRect()); }
+        if (!factpop.hidden && factTrigger){ factPopW = 0; placePopover(factpop, factTrigger.getBoundingClientRect(), true); }
       });
     }
     clearTimeout(rzT);
