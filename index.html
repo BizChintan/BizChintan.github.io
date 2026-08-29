@@ -2938,20 +2938,20 @@
       b.fillStyle = omg; b.beginPath(); b.arc(ox2, oy2, orr, 0, TAU); b.fill();
     }
 
-    // Antarctica — a real south polar cap with a soft feathered top edge
-    var antG = b.createRadialGradient(R, R * 2.05, R * 0.12, R, R * 2.05, R * 1.2);
-    antG.addColorStop(0.00, "#f5f9ff"); antG.addColorStop(0.52, "#e7efff");
-    antG.addColorStop(0.78, "rgba(221,233,251,0.5)"); antG.addColorStop(1.00, "rgba(210,226,248,0)");
+    // Antarctica — a compact, clearly solid south polar cap
+    var antG = b.createRadialGradient(R, R * 1.9, R * 0.04, R, R * 1.9, R * 0.5);
+    antG.addColorStop(0.00, "#f8fbff"); antG.addColorStop(0.46, "#edf3ff");
+    antG.addColorStop(0.76, "rgba(225,236,252,0.72)"); antG.addColorStop(1.00, "rgba(214,229,250,0)");
     b.fillStyle = antG;
-    b.beginPath(); b.ellipse(R, R * 1.92, R * 1.12, R * 0.5, 0, 0, TAU); b.fill();
-    b.fillStyle = "rgba(245,249,255,0.92)";
-    b.beginPath(); b.ellipse(R * 0.72, R * 1.8, R * 0.26, R * 0.15, 0, 0, TAU); b.fill();
-    b.beginPath(); b.ellipse(R * 1.33, R * 1.82, R * 0.22, R * 0.13, 0, 0, TAU); b.fill();
+    b.beginPath(); b.ellipse(R, R * 1.97, R * 0.5, R * 0.34, 0, 0, TAU); b.fill();
+    b.fillStyle = "rgba(247,251,255,0.92)";
+    b.beginPath(); b.ellipse(R * 0.84, R * 1.82, R * 0.15, R * 0.09, 0, 0, TAU); b.fill();
+    b.beginPath(); b.ellipse(R * 1.19, R * 1.84, R * 0.13, R * 0.08, 0, 0, TAU); b.fill();
     b.strokeStyle = "rgba(150,180,225,0.22)"; b.lineWidth = R * 0.012;
-    for (var av = 0; av < 5; av++){
+    for (var av = 0; av < 4; av++){
       b.beginPath();
-      b.moveTo(R * (0.3 + av * 0.1), R * 1.72);
-      b.lineTo(R * (0.34 + av * 0.1) + (rnd(av + 7) - 0.5) * R * 0.1, R * 1.98);
+      b.moveTo(R * (0.56 + av * 0.08), R * 1.82);
+      b.lineTo(R * (0.59 + av * 0.08) + (rnd(av + 7) - 0.5) * R * 0.08, R * 2.0);
       b.stroke();
     }
 
@@ -3265,9 +3265,8 @@
     var eBigR = Math.max(28, Math.min(132, (nameGeo.h || 130) * 0.26));
     var eNatR = PLANETS[2].wr * scale * BODY;
     var earthR = eNatR + (eBigR - eNatR) * (1 - Math.min(1, pe / 0.42));
-    var eTX = nameGeo.w
-      ? Math.max(eBigR + 14, Math.min(bw - eBigR - 14, nameGeo.left + nameGeo.w * (SMALL() ? 0.66 : 0.92) + eBigR + 16))
-      : bw * 0.7;
+    // Earth rides in the right-most ~30% of the viewport, independent of the name column
+    var eTX = Math.max(bw * 0.72, Math.min(bw - eBigR - 16, bw * 0.84));
     var eTY = nameGeo.w
       ? Math.max(eBigR + 58, Math.min(bh - eBigR - 20, nbTop + nameGeo.h * (SMALL() ? 0.88 : 0.44)))
       : bh * 0.4;
