@@ -2,7 +2,7 @@
 
 Single-page "Control Tower" portfolio for Chintan Dhamecha — Digital Transformation & Operations.
 
-**Live site:** https://bizchintan.github.io/
+**Live site:** https://chintan-dhamecha.github.io/
 
 ## What's here
 
@@ -24,5 +24,5 @@ python -m http.server 8000    # then visit http://localhost:8000
 
 ## Deploying
 
-Push to the `main` branch of a repo named `bizchintan.github.io`, then enable
+Push to the `main` branch of a repo named `chintan-dhamecha.github.io`, then enable
 **Settings → Pages → Deploy from branch → main / root**.
