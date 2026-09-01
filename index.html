@@ -1424,9 +1424,34 @@
   :root[data-theme="light"] .foot{
     text-shadow:0 1px 3px rgba(255,249,238,0.95), 0 0 12px rgba(255,249,238,0.7);
   }
-  /* certificate + leadership frames — identical, visibly bordered */
+  /* Certifications / Leadership / Contact frames — fully solid in daylight.
+     The default look uses a semi-transparent container colour peeking through
+     1px gaps; over the moving beach that renders unevenly (some dividers
+     bright, some invisible, stray tint behind text). Solid colours make
+     every row read identically no matter what is scrolling behind. */
   :root[data-theme="light"] .certs,
-  :root[data-theme="light"] .cmd-log{ background:var(--line-2); border-color:var(--line-2); }
+  :root[data-theme="light"] .cmd-log,
+  :root[data-theme="light"] .contact-grid{
+    background:#cbb693;                 /* solid divider + frame colour */
+    border:1px solid #b09669;
+  }
+  :root[data-theme="light"] .cert,
+  :root[data-theme="light"] button.cert,
+  :root[data-theme="light"] .cmd-row,
+  :root[data-theme="light"] .contact-row{
+    background:#fffaf2 !important;      /* opaque rows — no bleed, no stuck state */
+  }
+  :root[data-theme="light"] button.cert:hover,
+  :root[data-theme="light"] button.cert:focus-visible,
+  :root[data-theme="light"] a.contact-row:hover,
+  :root[data-theme="light"] a.contact-row:focus-visible{
+    background:#f3e6d0 !important;
+  }
+  :root[data-theme="light"] .cert > span,
+  :root[data-theme="light"] .cmd-row > span,
+  :root[data-theme="light"] .cmd-row .c-txt > span{
+    background:transparent !important;  /* nothing rides behind the text runs */
+  }
 
   /* ---- Capability Constellation: the .node chips had a baked-in dark
      background (invisible in daylight) — give them a light card ---- */
