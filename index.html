@@ -1069,16 +1069,18 @@
 
   /* ---------- CERTIFICATIONS ---------- */
   .certs-sec{ border-top:1px solid var(--line); }
-  .certs{ list-style:none; margin:0; padding:0; display:grid; gap:1px; background:var(--line); border:1px solid var(--line); }
-  .cert{ background:var(--panel); padding:16px 18px; display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; }
+  /* each certification is its own bordered card with a gap (no shared frame) */
+  .certs{ list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+  .cert{ background:var(--panel); border:1px solid var(--line-2); padding:16px 18px; display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; }
   .cert .c-name{ font-weight:600; color:var(--ink); font-size:14.5px; }
   .cert .c-body{ font-family:var(--font-mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); }
   .cert .c-yr{ margin-left:auto; font-family:var(--font-mono); font-size:11px; color:var(--amber); }
 
   /* ---------- LEADERSHIP ---------- */
   .lead-sec{ border-top:1px solid var(--line); background:linear-gradient(180deg,transparent,rgba(9,14,16,0.4)); }
-  .cmd-log{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line); }
-  .cmd-row{ background:var(--panel); padding:16px 18px; display:flex; gap:16px; }
+  /* each leadership entry is its own bordered card with a gap (no shared frame) */
+  .cmd-log{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .cmd-row{ background:var(--panel); border:1px solid var(--line-2); padding:16px 18px; display:flex; gap:16px; }
   .cmd-row .c-verb{
     font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
     color:var(--teal); flex:none; width:52px; padding-top:3px;
@@ -1109,12 +1111,13 @@
 
   /* ---------- CERTIFICATIONS — clickable cards + certificate lightbox ---------- */
   button.cert{
-    appearance:none; width:100%; margin:0; border:0; cursor:pointer;
+    appearance:none; width:100%; margin:0; cursor:pointer;
+    border:1px solid var(--line-2);
     font:inherit; color:inherit; text-align:left;
     background:var(--panel);
-    transition:background .18s var(--ease), color .18s var(--ease);
+    transition:background .18s var(--ease), color .18s var(--ease), border-color .18s var(--ease);
   }
-  button.cert:hover, button.cert:focus-visible{ background:var(--panel-2); }
+  button.cert:hover, button.cert:focus-visible{ background:var(--panel-2); border-color:var(--teal); }
   button.cert:focus-visible{ outline:2px solid var(--teal); outline-offset:-2px; }
   .cert .c-open{
     flex:0 0 100%; margin-top:8px;
