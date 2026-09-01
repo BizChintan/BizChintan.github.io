@@ -3,8 +3,43 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark light" />
+<script>
+  /* set the theme before first paint — no flash of the wrong colours */
+  (function(){
+    var t = "dark";
+    try{
+      var s = localStorage.getItem("pf-theme");
+      if (s === "light" || s === "dark") t = s;
+      else if (window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches) t = "light";
+    }catch(e){}
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
 <title>Chintan Dhamecha — Digital Transformation &amp; Operations</title>
 <meta name="description" content="Chintan Dhamecha — Digital Transformation &amp; Operations professional. Mission-control portfolio." />
+
+<!-- Open Graph (LinkedIn, Facebook, Slack, WhatsApp) -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Chintan Dhamecha" />
+<meta property="og:title" content="Chintan Dhamecha — Digital Transformation &amp; Operations" />
+<meta property="og:description" content="Mission-control portfolio: SAP S/4HANA, process automation and program delivery across digital transformation and operations." />
+<meta property="og:url" content="https://chintan-dhamecha.github.io/" />
+<meta property="og:image" content="https://chintan-dhamecha.github.io/og-image.png" />
+<meta property="og:image:secure_url" content="https://chintan-dhamecha.github.io/og-image.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Chintan Dhamecha — Digital Transformation &amp; Operations portfolio" />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Chintan Dhamecha — Digital Transformation &amp; Operations" />
+<meta name="twitter:description" content="Mission-control portfolio: SAP S/4HANA, process automation and program delivery." />
+<meta name="twitter:image" content="https://chintan-dhamecha.github.io/og-image.png" />
+
+<link rel="canonical" href="https://chintan-dhamecha.github.io/" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -1300,6 +1335,124 @@
   .no-js .node-fallback li{ list-style:none; font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); border:1px solid var(--line-2); padding:6px 10px; }
   .no-js #links{ display:none; }
   .no-js .constellation{ height:auto; min-height:0; }
+
+  /* ============================================================
+     LIGHT THEME — "golden hour beach"
+     dark "control tower" stays the default; this is the toggle state.
+     Only tokens + a few hard-coded dark values are overridden; every
+     component reads through the vars, so the whole UI re-skins here.
+     ============================================================ */
+  :root[data-theme="light"]{
+    --bg:        #f4e7d3;   /* warm sand */
+    --bg-2:      #ecd9bd;
+    --panel:     #fff8ef;
+    --panel-2:   #f6e8d4;
+    --line:      rgba(110,72,40,0.18);
+    --line-2:    rgba(110,72,40,0.34);
+    --ink:       #2c1e12;   /* ~12:1 on --bg */
+    --ink-dim:   #5f4a33;   /* ~5.6:1 on --bg */
+    --ink-faint: #806647;
+    --teal:      #0a6b61;   /* deep lagoon — ~5:1 on sand */
+    --teal-deep: #084f48;
+    --amber:     #a8480a;   /* burnt sunset — ~6:1 on sand */
+    --amber-deep:#883908;
+    --danger:    #a52218;
+  }
+  :root[data-theme="light"] body{ background:var(--bg); color:var(--ink); }
+  :root[data-theme="light"] a{ color:var(--teal); }
+  :root[data-theme="light"] ::selection{ background:var(--amber); color:#fff; }
+
+  /* canvas fallback tint (the JS beach scene paints over this) */
+  :root[data-theme="light"] #bg{
+    background:linear-gradient(180deg,#ffe7bd 0%,#ffd7a4 40%,#f6c79e 58%,#dcc4a8 100%);
+  }
+  :root[data-theme="light"] .scanlines{
+    background:repeating-linear-gradient(to bottom, rgba(90,55,20,0.028) 0 1px, transparent 1px 3px);
+  }
+  :root[data-theme="light"] .vignette{
+    box-shadow:inset 0 0 220px 26px rgba(120,72,30,0.16);
+  }
+  :root[data-theme="light"] .topbar{
+    background:linear-gradient(180deg, rgba(255,248,239,0.95), rgba(255,248,239,0.55));
+  }
+  :root[data-theme="light"] .hero::before{
+    background:radial-gradient(70% 58% at 26% 44%,
+      rgba(244,231,211,0.94) 0%, rgba(244,231,211,0.66) 36%, rgba(244,231,211,0.16) 64%, rgba(244,231,211,0) 80%);
+  }
+  :root[data-theme="light"] .name-line{
+    text-shadow:0 2px 10px rgba(255,241,216,0.9), 0 1px 2px rgba(110,60,20,0.28);
+  }
+  :root[data-theme="light"] .name-line:last-of-type{ color:#4a3826; }
+
+  /* theme toggle button — mirrors .sound-toggle */
+  .theme-toggle{
+    appearance:none; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px;
+    background:none; border:1px solid var(--line-2); color:var(--ink-dim);
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; padding:6px 12px; min-height:32px;
+    transition:color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .theme-toggle .tt-ic{ font-size:12px; line-height:1; }
+  .theme-toggle:hover, .theme-toggle:focus-visible{ color:var(--ink); border-color:var(--teal); }
+  .theme-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .theme-toggle[aria-pressed="true"]{ color:var(--amber); border-color:var(--amber); }
+  @media (pointer:coarse){ .theme-toggle{ min-height:44px; } }
+
+  /* full-screen wipe played once when the theme flips */
+  #themeflash{
+    position:fixed; inset:0; z-index:400; pointer-events:none; opacity:0;
+    background:radial-gradient(120% 120% at 62% 44%, #fff5df 0%, #ffd89e 40%, #f6a35c 70%, rgba(246,163,92,0) 100%);
+  }
+  #themeflash.go{ animation:themeWipe .72s var(--ease); }
+  @keyframes themeWipe{ 0%{opacity:0} 18%{opacity:.96} 100%{opacity:0} }
+
+  /* invisible bird hit-targets (light) — live in the fixed .spacefacts layer */
+  .spacefacts .bird-hit{ pointer-events:auto; }
+  .bird-hit{
+    position:fixed; left:0; top:0; margin:0; padding:11px;
+    border:0; background:none; cursor:pointer;
+    font-size:0; line-height:0; will-change:transform;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .bird-hit::after{
+    content:""; display:block; width:14px; height:14px; border-radius:50%;
+  }
+  .bird-hit:focus-visible{ outline:none; }
+  .bird-hit:focus-visible::after{ box-shadow:0 0 0 2px var(--amber); }
+
+  /* plain-text fact presenter (light) — no box, sits in a side gutter,
+     does NOT track the bird, must not overlay the portfolio content */
+  .beachfact{
+    position:fixed; z-index:120; width:min(280px, calc(100vw - 32px));
+    padding:0 0 0 12px; border-left:2px solid var(--amber);
+    font-family:var(--font-sans);
+    animation:bfIn .3s var(--ease);
+  }
+  @keyframes bfIn{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  .bf-label{
+    display:block; font-family:var(--font-mono); font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--amber); margin-bottom:6px;
+  }
+  .bf-text{ margin:0; font-size:13.5px; line-height:1.65; color:var(--ink); }
+  @media (max-width:640px){
+    .beachfact{
+      left:14px !important; right:14px; top:auto !important; bottom:14px;
+      width:auto; padding:14px; border-left:2px solid var(--amber);
+      background:var(--bg); box-shadow:0 -10px 34px rgba(90,55,20,0.22);
+    }
+  }
+
+  /* show the right ambient layer for the active theme */
+  :root[data-theme="light"] .spacefact,
+  :root[data-theme="light"] .planet-hit,
+  :root[data-theme="light"] .sun-counter{ display:none !important; }
+  :root:not([data-theme="light"]) .bird-hit,
+  :root:not([data-theme="light"]) .beachfact{ display:none !important; }
+
+  @media (prefers-reduced-motion: reduce){
+    #themeflash.go{ animation:none; }
+  }
 </style>
 </head>
 <body class="no-js">
@@ -1312,7 +1465,8 @@
 <canvas id="bg" aria-hidden="true"></canvas>
 <div class="scanlines" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
-<div class="spacefacts" id="spacefacts" role="group" aria-label="Ambient space facts"></div>
+<div id="themeflash" aria-hidden="true"></div>
+<div class="spacefacts" id="spacefacts" role="group" aria-label="Ambient facts"></div>
 <div id="eggfade" aria-hidden="true"></div>
 <!-- Egg callout kept OUTSIDE #invertwrap so it stays legible (uninverted) -->
 <div class="egg-popup" id="eggPopup" role="status" hidden>
@@ -1350,6 +1504,9 @@
   </a>
   <button type="button" class="sound-toggle" id="soundToggle" aria-pressed="false" aria-label="Sound">
     <span class="st-dot" aria-hidden="true"></span><span class="st-txt">Sound Off</span>
+  </button>
+  <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Switch between the night and day theme">
+    <span class="tt-ic" aria-hidden="true">&#x263E;</span><span class="tt-txt">Night</span>
   </button>
 </header>
 
@@ -1597,6 +1754,12 @@
     </div>
     <p class="readout-origin" id="roOrigin">—</p>
   </div>
+</div>
+
+<!-- ========== PLAIN-TEXT FACT PRESENTER (light theme — birds + ship) ========== -->
+<div class="beachfact" id="beachfact" role="dialog" aria-label="Fact" hidden>
+  <span class="bf-label mono" id="bfLabel">—</span>
+  <p class="bf-text" id="bfText">—</p>
 </div>
 
 <!-- ========== LIGHTWEIGHT FACT POPOVER (space facts + planet facts) ========== -->
@@ -3794,6 +3957,379 @@
     }
   }
 
+  /* ============================================================
+     LIGHT THEME  ·  GOLDEN-HOUR BEACH
+     Parallel to the space engine: birds replace the fact-asteroids,
+     a ship on the horizon replaces the Sun as the click target, and
+     the scroll-driven zoom-out is framed by a pirate spyglass mask.
+     ============================================================ */
+  var THEME       = (docEl.getAttribute("data-theme") === "light") ? "light" : "dark";
+  var themeToggle = document.getElementById("themeToggle");
+  var themeFlash  = document.getElementById("themeflash");
+  var introT = 1, introFrom = THEME, introStart = 0;
+  var BEACH_TWEEN = 1500;                       // ms — scene-arrival zoom
+  var shipScreen = { x:0, y:0, r:0 };
+
+  // clamp01() is already defined above (space-egg helpers) — reuse it
+  function smooth01(v){ v = clamp01(v); return v * v * (3 - 2 * v); }
+  function easeOutCubic(v){ return 1 - Math.pow(1 - clamp01(v), 3); }
+
+  // 8 "scary facts about Earth" — same count as SPACE_FACTS; css = reduced-motion resting spot
+  var EARTH_FACTS = [
+    { label:"MASS EXTINCTIONS",     text:"Earth has been through at least five mass extinctions. The worst, about 252 million years ago, wiped out roughly 90% of all species.", css:{ top:"13%", left:"3.5%" } },
+    { label:"THE TOBA ERUPTION",    text:"Around 74,000 years ago a supervolcano in Sumatra erupted with such force it may have cut the human population to a few thousand.", css:{ top:"40%", left:"3%" } },
+    { label:"MAGNETIC REVERSALS",   text:"Earth's magnetic poles have flipped hundreds of times. During a reversal the field that shields us from solar radiation weakens sharply for centuries.", css:{ top:"60%", left:"3.5%" } },
+    { label:"THE SIXTH EXTINCTION", text:"Species are vanishing tens to hundreds of times faster than the natural background rate — a mass extinction unfolding in real time.", css:{ top:"82%", left:"4%" } },
+    { label:"OCEAN DEOXYGENATION",  text:"The open ocean has lost about 2% of its dissolved oxygen since 1960, and low-oxygen dead zones keep spreading.", css:{ top:"10%", right:"4.5%" } },
+    { label:"CARBON RECORD",        text:"Atmospheric CO2 is higher now than at any point in at least 800,000 years, and rising faster than in any known natural episode.", css:{ top:"30%", right:"4.5%" } },
+    { label:"ATLANTIC CIRCULATION", text:"The ocean current that keeps north-west Europe mild is at its weakest in over a thousand years and could stall this century.", css:{ top:"52%", right:"4%" } },
+    { label:"UNSEEN ASTEROIDS",     text:"An estimated 25,000 near-Earth asteroids larger than 140 m exist. Most have still not been found.", css:{ top:"84%", right:"5.5%" } }
+  ];
+  var SHIP_FACT = { label:"THE LONG SILENCE", text:"In four to five billion years the Sun will swell into a red giant and the ocean this shore belongs to will boil away entirely." };
+
+  /* --- plain-text presenter: no box, drops into a side gutter, does NOT
+         track the bird, and is kept clear of the portfolio content --- */
+  var beachfact = document.getElementById("beachfact");
+  var bfLabel   = document.getElementById("bfLabel");
+  var bfText    = document.getElementById("bfText");
+  var bfTrigger = null;
+
+  function placeBeachFact(ar){
+    beachfact.style.visibility = "hidden";
+    beachfact.hidden = false;
+    var rr = beachfact.getBoundingClientRect();
+    var m = 16;
+    var leftSide = (ar.left + ar.right) / 2 < window.innerWidth / 2;
+    var left = leftSide ? m : (window.innerWidth - m - rr.width);
+    var top  = clamp01(ar.top / Math.max(1, window.innerHeight)) * Math.max(0, window.innerHeight - rr.height - 2 * m) + m;
+    beachfact.style.left = Math.round(Math.max(m, left)) + "px";
+    beachfact.style.top  = Math.round(Math.max(m, top)) + "px";
+    beachfact.style.visibility = "";
+  }
+  function openBeachFact(label, text, triggerEl){
+    if (bfTrigger && bfTrigger !== triggerEl) bfTrigger.setAttribute("aria-expanded", "false");
+    bfTrigger = triggerEl || null;
+    if (bfTrigger) bfTrigger.setAttribute("aria-expanded", "true");
+    bfLabel.textContent = label;
+    bfText.textContent = text;
+    var ar = triggerEl ? triggerEl.getBoundingClientRect()
+      : { left: window.innerWidth - 1, right: window.innerWidth, top: window.innerHeight * 0.4, height: 0 };
+    placeBeachFact(ar);
+    document.addEventListener("keydown", onBeachKey, true);
+    setTimeout(function(){ document.addEventListener("pointerdown", onBeachOutside, true); }, 0);
+  }
+  function closeBeachFact(){
+    if (!beachfact || beachfact.hidden) return;
+    beachfact.hidden = true;
+    if (bfTrigger){ bfTrigger.setAttribute("aria-expanded", "false"); bfTrigger = null; }
+    document.removeEventListener("keydown", onBeachKey, true);
+    document.removeEventListener("pointerdown", onBeachOutside, true);
+  }
+  function onBeachKey(e){ if (e.key === "Escape"){ e.preventDefault(); closeBeachFact(); } }
+  function onBeachOutside(e){
+    var t = e.target;
+    if (beachfact.contains(t)) return;
+    if (t.closest && t.closest(".bird-hit, #shipHit")) return;
+    closeBeachFact();
+  }
+
+  // --- birds: invisible DOM hit-targets in the fixed .spacefacts layer, drawn on canvas ---
+  var birdBtns = EARTH_FACTS.map(function(f, i){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "bird-hit mono";
+    b.hidden = (THEME !== "light");
+    b.setAttribute("aria-haspopup", "dialog");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-label", f.label + " — reveal a fact about Earth");
+    b.addEventListener("click", function(){ openBeachFact(f.label, f.text, b); });
+    factLayer.appendChild(b);
+    var ang = rnd(i * 3.9 + 21) * Math.PI * 2;
+    var spd = 12 + rnd(i * 2.3 + 22) * 16;
+    b._bd = {
+      x: (0.08 + rnd(i * 5.1 + 23) * 0.84) * window.innerWidth,
+      y: (0.08 + rnd(i * 6.7 + 24) * 0.40) * window.innerHeight,
+      vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd * 0.4,
+      wob: rnd(i * 7.3 + 25) * Math.PI * 2,
+      flap: rnd(i * 8.9 + 26) * Math.PI * 2,
+      sz: 8 + Math.round(rnd(i * 9.4 + 27) * 6),
+      w: 0, h: 0
+    };
+    return b;
+  });
+  var shipHitBtn = document.createElement("button");
+  shipHitBtn.type = "button";
+  shipHitBtn.id = "shipHit";
+  shipHitBtn.className = "bird-hit";
+  shipHitBtn.hidden = (THEME !== "light");
+  shipHitBtn.style.padding = "0";
+  shipHitBtn.setAttribute("aria-haspopup", "dialog");
+  shipHitBtn.setAttribute("aria-expanded", "false");
+  shipHitBtn.setAttribute("aria-label", SHIP_FACT.label + " — the ship on the horizon");
+  shipHitBtn.addEventListener("click", function(){ openBeachFact(SHIP_FACT.label, SHIP_FACT.text, shipHitBtn); });
+  factLayer.appendChild(shipHitBtn);
+
+  function layoutBirds(scatter){
+    for (var i = 0; i < birdBtns.length; i++){
+      var b = birdBtns[i], s = b._bd; if (!s) continue;
+      s.w = b.offsetWidth || 30; s.h = b.offsetHeight || 30;
+      if (scatter){
+        var c = EARTH_FACTS[i].css;
+        s.x = c.left != null ? parseFloat(c.left) / 100 * window.innerWidth
+                             : window.innerWidth - parseFloat(c.right) / 100 * window.innerWidth - s.w;
+        s.y = parseFloat(c.top) / 100 * window.innerHeight;
+      }
+      s.x = Math.max(0, Math.min(window.innerWidth  - s.w, s.x));
+      s.y = Math.max(0, Math.min(window.innerHeight - s.h, s.y));
+      b.style.transform = "translate3d(" + s.x.toFixed(1) + "px," + s.y.toFixed(1) + "px,0)";
+    }
+  }
+  function stepBirds(dt){
+    if (THEME !== "light" || REDUCED) return;
+    var W = window.innerWidth, H = window.innerHeight, band = H * 0.55;
+    for (var i = 0; i < birdBtns.length; i++){
+      var b = birdBtns[i], s = b._bd; if (!s) continue;
+      if (!s.w){ s.w = b.offsetWidth || 30; s.h = b.offsetHeight || 30; }
+      s.wob += dt * 0.8; s.flap += dt * (7 + (i % 3));
+      s.x += (s.vx + Math.cos(s.wob) * 5) * dt;
+      s.y += (s.vy + Math.sin(s.wob * 1.3) * 6) * dt;
+      if (s.x <= 0){ s.x = 0; s.vx = Math.abs(s.vx); }
+      else if (s.x >= W - s.w){ s.x = W - s.w; s.vx = -Math.abs(s.vx); }
+      if (s.y <= 0){ s.y = 0; s.vy = Math.abs(s.vy); }
+      else if (s.y >= band - s.h){ s.y = band - s.h; s.vy = -Math.abs(s.vy); }
+      b.style.transform = "translate3d(" + s.x.toFixed(1) + "px," + s.y.toFixed(1) + "px,0)";
+    }
+  }
+  function drawGull(x, y, flap, sz){
+    var d = Math.sin(flap) * 0.5 + 0.5;
+    var span = sz, rise = sz * (0.14 + d * 0.5);
+    bctx.beginPath();
+    bctx.moveTo(x - span, y);
+    bctx.quadraticCurveTo(x - span * 0.4, y - rise, x, y);
+    bctx.quadraticCurveTo(x + span * 0.4, y - rise, x + span, y);
+    bctx.stroke();
+  }
+  function drawBirds(t){
+    if (THEME !== "light") return;
+    bctx.strokeStyle = "rgba(58,40,28,0.72)";
+    bctx.lineWidth = 1.6; bctx.lineCap = "round";
+    for (var i = 0; i < birdBtns.length; i++){
+      var s = birdBtns[i]._bd; if (!s || birdBtns[i].hidden) continue;
+      drawGull(s.x + (s.w || 30) * 0.5, s.y + (s.h || 30) * 0.5, s.flap, s.sz);
+    }
+    bctx.lineCap = "butt";
+  }
+
+  function drawRidge(baseY, amp, colr, seed){
+    bctx.fillStyle = colr;
+    bctx.beginPath();
+    bctx.moveTo(-20, baseY + amp);
+    var steps = 8;
+    for (var i = 0; i <= steps; i++){
+      var x = -20 + (bw + 40) * (i / steps);
+      var h = (Math.sin(seed + i * 1.3) * 0.5 + Math.sin(seed * 2 + i * 0.7) * 0.5) * amp;
+      bctx.lineTo(x, baseY - h);
+    }
+    bctx.lineTo(bw + 20, baseY + amp);
+    bctx.closePath(); bctx.fill();
+  }
+  function drawShip(x, y, t){
+    var s = Math.max(7, minDim * 0.018);
+    if (!REDUCED) y += Math.sin(t * 0.0011) * s * 0.18;
+    bctx.fillStyle = "#2f2116";
+    bctx.beginPath();
+    bctx.moveTo(x - s * 1.5, y); bctx.lineTo(x + s * 1.5, y);
+    bctx.lineTo(x + s * 0.9, y + s * 0.55); bctx.lineTo(x - s * 0.9, y + s * 0.55);
+    bctx.closePath(); bctx.fill();
+    bctx.fillRect(x - s * 0.06, y - s * 2.4, s * 0.12, s * 2.4);
+    bctx.beginPath();
+    bctx.moveTo(x, y - s * 2.3); bctx.lineTo(x + s * 1.05, y - s * 0.15); bctx.lineTo(x, y - s * 0.15);
+    bctx.closePath(); bctx.fill();
+    bctx.beginPath();
+    bctx.moveTo(x, y - s * 2.05); bctx.lineTo(x - s * 0.95, y - s * 0.15); bctx.lineTo(x, y - s * 0.15);
+    bctx.closePath(); bctx.fill();
+    return s;
+  }
+
+  function drawBeach(t, pe, dt){
+    var W = bw, H = bh;
+    var intro = 1;
+    if (introT < 1){
+      intro = easeOutCubic((performance.now() - introStart) / BEACH_TWEEN);
+      if (intro >= 1) introT = 1;
+    }
+    var spy  = 1 - smooth01(pe / 0.42);                 // 1 at top -> 0 pulled back
+    var zoom = 1 + 1.30 * spy;
+    if (introFrom === "dark" && intro < 1) zoom *= 1 + (1 - intro) * 7;
+
+    var horizon = H * (0.30 + 0.16 * smooth01(pe / 0.6));
+    var shipX = W * 0.62;
+    var shipY = horizon - Math.max(6, minDim * 0.012);
+    shipScreen.x = shipX; shipScreen.y = shipY;
+
+    bctx.save();
+    bctx.translate(shipX, shipY);
+    bctx.scale(zoom, zoom);
+    bctx.translate(-shipX, -shipY);
+
+    var sky = bctx.createLinearGradient(0, -H * 0.4, 0, horizon);
+    sky.addColorStop(0, "#f7e6bf"); sky.addColorStop(0.5, "#ffd9a1");
+    sky.addColorStop(0.82, "#ffbe86"); sky.addColorStop(1, "#ff9f6b");
+    bctx.fillStyle = sky;
+    bctx.fillRect(-W, -H, W * 3, horizon + H);
+
+    var sunX = W * 0.62, sunY = horizon - minDim * 0.02;
+    var sunR = Math.max(20, minDim * 0.055);
+    var halo = bctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 5);
+    halo.addColorStop(0, "rgba(255,248,228,0.95)");
+    halo.addColorStop(0.22, "rgba(255,216,150,0.8)");
+    halo.addColorStop(1, "rgba(255,190,120,0)");
+    bctx.fillStyle = halo;
+    bctx.beginPath(); bctx.arc(sunX, sunY, sunR * 5, 0, TAU); bctx.fill();
+    bctx.fillStyle = "#fff5da";
+    bctx.beginPath(); bctx.arc(sunX, sunY, sunR, 0, TAU); bctx.fill();
+
+    drawRidge(horizon + 1, minDim * 0.05,  "rgba(120,96,120,0.30)", 1.7);
+    drawRidge(horizon + 1, minDim * 0.032, "rgba(96,78,104,0.42)",  4.1);
+
+    var sea = bctx.createLinearGradient(0, horizon, 0, H);
+    sea.addColorStop(0, "#eab784"); sea.addColorStop(0.12, "#cf9270");
+    sea.addColorStop(0.45, "#8a7684"); sea.addColorStop(1, "#4a5568");
+    bctx.fillStyle = sea;
+    bctx.fillRect(-W, horizon, W * 3, H - horizon + 2);
+
+    bctx.save();
+    bctx.beginPath(); bctx.rect(sunX - sunR * 1.6, horizon, sunR * 3.2, H - horizon); bctx.clip();
+    for (var g = 0; g < 26; g++){
+      var gy = horizon + (g / 26) * (H - horizon);
+      var gw = sunR * (0.3 + g / 20) * (0.6 + 0.4 * Math.sin(t * 0.004 + g));
+      bctx.globalAlpha = 0.5 * (1 - g / 30);
+      bctx.fillStyle = "rgba(255,240,205,0.9)";
+      bctx.fillRect(sunX - gw, gy, gw * 2, Math.max(1, (H - horizon) / 90));
+    }
+    bctx.globalAlpha = 1;
+    bctx.restore();
+
+    bctx.strokeStyle = "rgba(255,246,224,0.16)"; bctx.lineWidth = 1;
+    for (var wv = 0; wv < 5; wv++){
+      var wy = horizon + (wv + 1) / 6 * (H - horizon) * 0.62;
+      bctx.beginPath();
+      for (var wx = -20; wx <= W + 20; wx += 26){
+        var yy = wy + Math.sin(wx * 0.03 + t * 0.002 + wv) * (2 + wv);
+        wx === -20 ? bctx.moveTo(wx, yy) : bctx.lineTo(wx, yy);
+      }
+      bctx.stroke();
+    }
+
+    var beachTop = H * (0.72 + 0.10 * smooth01(pe / 0.7));
+    var wash = REDUCED ? 0.5 : (Math.sin(t * 0.0009) * 0.5 + 0.5);
+    var foamY = beachTop - (H - beachTop) * 0.18 * wash;
+    var sand = bctx.createLinearGradient(0, beachTop - 30, 0, H);
+    sand.addColorStop(0, "#ecd0a2"); sand.addColorStop(1, "#d5ac79");
+    bctx.fillStyle = sand;
+    bctx.beginPath();
+    bctx.moveTo(-20, H + 20);
+    bctx.lineTo(-20, beachTop + (REDUCED ? 0 : Math.sin(t * 0.001) * 4));
+    bctx.quadraticCurveTo(W * 0.5, beachTop - 22, W + 20, beachTop + 8);
+    bctx.lineTo(W + 20, H + 20);
+    bctx.closePath(); bctx.fill();
+    bctx.strokeStyle = "rgba(255,252,244,0.7)";
+    bctx.lineWidth = Math.max(2, minDim * 0.006);
+    bctx.beginPath();
+    bctx.moveTo(-20, foamY + 10);
+    bctx.quadraticCurveTo(W * 0.5, foamY - 16, W + 20, foamY + 14);
+    bctx.stroke();
+
+    var shipR = drawShip(shipX, shipY, t);
+    shipScreen.r = Math.max(46, shipR * 2.6 * zoom);
+
+    bctx.restore();
+
+    if (spy > 0.004){
+      var cxp = shipScreen.x, cyp = shipScreen.y;
+      var maskR = minDim * (0.30 + (1 - spy) * 1.35);
+      bctx.save();
+      bctx.beginPath();
+      bctx.rect(0, 0, W, H);
+      bctx.arc(cxp, cyp, maskR, 0, TAU, true);
+      bctx.fillStyle = "rgba(18,11,6," + (0.94 * spy).toFixed(3) + ")";
+      bctx.fill("evenodd");
+      var vg = bctx.createRadialGradient(cxp, cyp, maskR * 0.72, cxp, cyp, maskR * 1.06);
+      vg.addColorStop(0, "rgba(18,11,6,0)");
+      vg.addColorStop(1, "rgba(18,11,6," + (0.6 * spy).toFixed(3) + ")");
+      bctx.fillStyle = vg;
+      bctx.beginPath(); bctx.arc(cxp, cyp, maskR * 1.06, 0, TAU); bctx.fill();
+      bctx.strokeStyle = "rgba(150,110,60," + (0.85 * spy).toFixed(3) + ")";
+      bctx.lineWidth = Math.max(5, minDim * 0.018);
+      bctx.beginPath(); bctx.arc(cxp, cyp, maskR, 0, TAU); bctx.stroke();
+      bctx.strokeStyle = "rgba(90,64,34," + (0.7 * spy).toFixed(3) + ")";
+      bctx.lineWidth = Math.max(2, minDim * 0.006);
+      bctx.beginPath(); bctx.arc(cxp, cyp, maskR + Math.max(4, minDim * 0.013), 0, TAU); bctx.stroke();
+      bctx.restore();
+    }
+
+    drawBirds(t);
+
+    if (shipHitBtn && !shipHitBtn.hidden){
+      var hr = Math.max(30, shipScreen.r);
+      shipHitBtn.style.width  = Math.round(hr) + "px";
+      shipHitBtn.style.height = Math.round(hr) + "px";
+      shipHitBtn.style.transform =
+        "translate3d(" + (shipScreen.x - hr / 2).toFixed(1) + "px," + (shipScreen.y - hr / 2).toFixed(1) + "px,0)";
+    }
+
+    if (introT < 1 && !bgRaf) bgRaf = requestAnimationFrame(renderBg);
+  }
+
+  function syncThemeToggle(){
+    if (!themeToggle) return;
+    var light = THEME === "light";
+    themeToggle.setAttribute("aria-pressed", light ? "true" : "false");
+    var ic = themeToggle.querySelector(".tt-ic"), tx = themeToggle.querySelector(".tt-txt");
+    if (ic) ic.innerHTML = light ? "&#x2600;" : "&#x263E;";
+    if (tx) tx.textContent = light ? "Day" : "Night";
+  }
+  function refreshFactTargets(){
+    var light = THEME === "light";
+    if (light){ for (var i = 0; i < planetBtns.length; i++){ planetBtns[i].hidden = true; planetBtns[i]._vis = false; } }
+    if (sunHitBtn) sunHitBtn.hidden = light ? true : (EGG.state !== "idle");
+    for (var j = 0; j < birdBtns.length; j++) birdBtns[j].hidden = !light;
+    if (shipHitBtn) shipHitBtn.hidden = !light;
+    if (light) layoutBirds(REDUCED);
+    if (flareHint){
+      flareHint.textContent = light
+        ? "◎ peering through the glass · scroll to pull back to the shore"
+        : "◎ that's Earth · scroll to pull back and see the whole system";
+    }
+  }
+  function applyTheme(next){
+    if (next === THEME) return;
+    introFrom = THEME;
+    THEME = next;
+    docEl.setAttribute("data-theme", THEME);
+    try { localStorage.setItem("pf-theme", THEME); } catch (e){}
+    if (typeof closeFact === "function") closeFact(false);
+    closeBeachFact();
+    syncThemeToggle();
+    refreshFactTargets();
+    if (themeFlash && !REDUCED){
+      themeFlash.classList.remove("go");
+      void themeFlash.offsetWidth;
+      themeFlash.classList.add("go");
+    }
+    introT = (THEME === "light" && introFrom === "dark" && !REDUCED) ? 0 : 1;
+    if (introT === 0) introStart = performance.now();
+    if (REDUCED) renderBg(performance.now(), 0.68);
+    else if (!bgRaf) bgRaf = requestAnimationFrame(renderBg);
+  }
+  if (themeToggle){
+    syncThemeToggle();
+    themeToggle.addEventListener("click", function(){
+      applyTheme(THEME === "light" ? "dark" : "light");
+    });
+  }
+  refreshFactTargets();
+
   function renderBg(now, forceProg){
     var t = now - bgStart;
     var dt = Math.min(0.05, Math.max(0, (now - bgPrev) / 1000));   // clamp big gaps (tab switch)
@@ -3801,17 +4337,22 @@
     var pe = easeInOut(forceProg != null ? forceProg : scrollProg());
     try {
       bctx.clearRect(0, 0, bw, bh);
-      stepSpaceFacts(dt);
-      followFactChip();
-      if (pe < 0.98){
-        bctx.globalAlpha = 1 - pe;
-        bctx.drawImage(gridLayer, 0, 0, bw, bh);
-        bctx.globalAlpha = 1;
+      if (THEME === "light"){
+        stepBirds(dt);
+        drawBeach(t, pe, dt);
+      } else {
+        stepSpaceFacts(dt);
+        followFactChip();
+        if (pe < 0.98){
+          bctx.globalAlpha = 1 - pe;
+          bctx.drawImage(gridLayer, 0, 0, bw, bh);
+          bctx.globalAlpha = 1;
+        }
+        drawStars(t);
+        drawSolarSystem(t, pe);
+        drawShooting(t);
+        drawShockwaves(t);
       }
-      drawStars(t);
-      drawSolarSystem(t, pe);
-      drawShooting(t);
-      drawShockwaves(t);
     } catch (err) { /* keep the loop alive through a bad frame */ }
 
     if (sunFlash > 0) sunFlash = Math.max(0, sunFlash - 0.03);
@@ -3828,8 +4369,13 @@
       if (activeOverlay) return;
       var onName = !!(e.target.closest && e.target.closest("#nameBtn"));
       var onUI = !!(e.target.closest && e.target.closest(
-        "header, footer, .overlay, .readout, .factpop, .egg-popup, .spacefact, .planet-hit, .tl-marker, .node, a, button"));
+        "header, footer, .overlay, .readout, .factpop, .beachfact, .egg-popup, .spacefact, .planet-hit, .bird-hit, .tl-marker, .node, a, button"));
       if (onUI && !onName) return;
+      if (THEME === "light"){                  // day theme: the ship is the only free-click target
+        var ds = Math.sqrt(Math.pow(e.clientX - shipScreen.x, 2) + Math.pow(e.clientY - shipScreen.y, 2));
+        if (ds < Math.max(48, shipScreen.r)) openBeachFact(SHIP_FACT.label, SHIP_FACT.text, shipHitBtn);
+        return;
+      }
       var d = Math.sqrt(Math.pow(e.clientX - sunScreen.x, 2) + Math.pow(e.clientY - sunScreen.y, 2));
       if (d < Math.max(56, sunScreen.r * 1.05)){
         sunActivated(e.clientX, e.clientY);   // Sun: flare + visible 100-tap counter
