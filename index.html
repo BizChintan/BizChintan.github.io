@@ -1383,14 +1383,62 @@
     background:linear-gradient(180deg, rgba(255,248,239,0.95), rgba(255,248,239,0.55));
   }
   :root[data-theme="light"] .hero::before{
-    background:radial-gradient(70% 58% at 26% 44%,
-      rgba(244,231,211,0.94) 0%, rgba(244,231,211,0.66) 36%, rgba(244,231,211,0.16) 64%, rgba(244,231,211,0) 80%);
+    left:-16vw; right:-16vw; top:-18vh; bottom:-18vh;
+    background:radial-gradient(78% 64% at 30% 46%,
+      rgba(245,233,214,0.97) 0%, rgba(245,233,214,0.86) 44%, rgba(245,233,214,0.44) 70%, rgba(245,233,214,0) 90%);
   }
   :root[data-theme="light"] .name-line{
     color:var(--ink);
     text-shadow:0 1px 0 rgba(255,246,230,0.9), 0 2px 14px rgba(255,241,216,0.7);
   }
   :root[data-theme="light"] .name-line:last-of-type{ color:#3a352e; }
+
+  /* ---- legibility deck: past the hero, content rides on opaque sand so
+     dark text never has to fight the bright/animated beach behind it ---- */
+  :root[data-theme="light"] #main > section:not(.hero),
+  :root[data-theme="light"] .foot{
+    background:rgba(244,232,216,0.94) !important;
+  }
+  :root[data-theme="light"] .topbar{
+    background:linear-gradient(180deg, rgba(250,242,231,0.98), rgba(250,242,231,0.9));
+  }
+  :root[data-theme="light"] .namebar{ background:rgba(250,242,231,0.96); }
+  :root[data-theme="light"] .sec-sub{ color:var(--ink-dim); }
+  :root[data-theme="light"] .legend,
+  :root[data-theme="light"] .cf-hint,
+  :root[data-theme="light"] .flare-hint{ color:var(--ink-dim); }
+
+  /* ---- Capability Constellation: the .node chips had a baked-in dark
+     background (invisible in daylight) — give them a light card ---- */
+  :root[data-theme="light"] .constellation{
+    background:
+      linear-gradient(rgba(90,60,35,0.07) 1px,transparent 1px) 0 0/44px 44px,
+      linear-gradient(90deg,rgba(90,60,35,0.07) 1px,transparent 1px) 0 0/44px 44px,
+      radial-gradient(700px 380px at 70% 30%, rgba(10,107,97,0.06), transparent 70%),
+      var(--panel);
+  }
+  :root[data-theme="light"] .node{
+    color:var(--ink);
+    background:rgba(255,250,242,0.97);
+    border-color:var(--line-2);
+  }
+  :root[data-theme="light"] .node[data-cat="tech"]{ border-color:rgba(10,107,97,0.5); }
+  :root[data-theme="light"] .node[data-cat="core"]{ border-color:rgba(168,72,10,0.5); }
+  :root[data-theme="light"] .node[data-cat="soft"]{ border-color:var(--line-2); }
+  :root[data-theme="light"] .node:hover,
+  :root[data-theme="light"] .node:focus-visible{
+    color:var(--ink); background:#fff;
+    box-shadow:0 0 0 1px var(--teal), 0 6px 20px rgba(80,54,30,0.22);
+  }
+  :root[data-theme="light"] .node[aria-pressed="true"]{
+    color:#fff; background:var(--teal); border-color:var(--teal);
+    box-shadow:0 0 22px rgba(10,107,97,0.35);
+  }
+  :root[data-theme="light"] .node[aria-pressed="true"] .pip{ background:#fff; }
+  :root[data-theme="light"] .node[data-cat="core"][aria-pressed="true"]{
+    color:#fff; background:var(--amber); border-color:var(--amber);
+    box-shadow:0 0 22px rgba(168,72,10,0.35);
+  }
 
   /* theme toggle button — mirrors .sound-toggle */
   .theme-toggle{
@@ -2591,13 +2639,15 @@
     lctx.clearRect(0, 0, w, h);
     if (STATIC || !w || !h) return;
     var maxD = Math.min(w, h) * 0.34;
+    var linkRGB = docEl.getAttribute("data-theme") === "light" ? "10,107,97" : "47,227,196";
+    var linkMax = docEl.getAttribute("data-theme") === "light" ? 0.5 : 0.28;
     var pts = nodes.map(function(n){ return { x: n.hx / 100 * w, y: n.hy / 100 * h }; });
     for (var a = 0; a < pts.length; a++){
       for (var b2 = a + 1; b2 < pts.length; b2++){
         var ddx = pts[a].x - pts[b2].x, ddy = pts[a].y - pts[b2].y;
         var d = Math.sqrt(ddx * ddx + ddy * ddy);
         if (d < maxD){
-          lctx.strokeStyle = "rgba(47,227,196," + ((1 - d / maxD) * 0.28).toFixed(3) + ")";
+          lctx.strokeStyle = "rgba(" + linkRGB + "," + ((1 - d / maxD) * linkMax).toFixed(3) + ")";
           lctx.lineWidth = 1;
           lctx.beginPath();
           lctx.moveTo(pts[a].x, pts[a].y);
@@ -4270,6 +4320,7 @@
     if (typeof closeFact === "function") closeFact(false);
     syncThemeToggle();
     refreshFactTargets();
+    if (typeof drawLinks === "function") drawLinks();   // recolour the constellation web
     if (themeFlash && !REDUCED){
       themeFlash.classList.remove("go");
       void themeFlash.offsetWidth;
