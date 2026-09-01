@@ -1432,24 +1432,31 @@
      1px gaps; over the moving beach that renders unevenly (some dividers
      bright, some invisible, stray tint behind text). Solid colours make
      every row read identically no matter what is scrolling behind. */
-  :root[data-theme="light"] .certs,
-  :root[data-theme="light"] .cmd-log,
   :root[data-theme="light"] .contact-grid{
     background:#c3a373;                 /* solid driftwood divider + frame */
     border:1px solid #9f7f56;
   }
+  /* certifications + leadership: each row is its own bordered card,
+     separated by a small gap (no shared container frame) */
+  :root[data-theme="light"] .certs,
+  :root[data-theme="light"] .cmd-log{
+    background:none; border:0; gap:8px;
+  }
   :root[data-theme="light"] .cert,
   :root[data-theme="light"] button.cert,
-  :root[data-theme="light"] .cmd-row,
-  :root[data-theme="light"] .contact-row{
-    background:#f2e2c5 !important;      /* warm shell — opaque, no bleed */
+  :root[data-theme="light"] .cmd-row{
+    background:#f2e2c5 !important;      /* warm shell — opaque */
+    border:1px solid #9f7f56 !important;
   }
+  :root[data-theme="light"] .contact-row{ background:#f2e2c5 !important; }
   :root[data-theme="light"] button.cert:hover,
   :root[data-theme="light"] button.cert:focus-visible,
   :root[data-theme="light"] a.contact-row:hover,
   :root[data-theme="light"] a.contact-row:focus-visible{
     background:#e7d3ac !important;
   }
+  :root[data-theme="light"] button.cert:hover,
+  :root[data-theme="light"] button.cert:focus-visible{ border-color:var(--teal) !important; }
   :root[data-theme="light"] .cert > span,
   :root[data-theme="light"] .cmd-row > span,
   :root[data-theme="light"] .cmd-row .c-txt > span{
