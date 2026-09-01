@@ -978,7 +978,9 @@
   .cf-hint::before{ content:"◂"; color:var(--amber); }
   .cf-hint::after{ content:"▸"; color:var(--amber); }
   .casefiles{
-    display:flex; gap:20px; padding:16px 4px 26px;
+    /* top padding leaves room for the "CASE FILE" tab that sits above each
+       card (~21px) plus the -6px hover lift — overflow-y:hidden would clip it */
+    display:flex; gap:20px; padding:36px 4px 26px;
     overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory;
     -webkit-overflow-scrolling:touch;
