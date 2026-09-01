@@ -1393,20 +1393,33 @@
   }
   :root[data-theme="light"] .name-line:last-of-type{ color:#3a352e; }
 
-  /* ---- legibility deck: past the hero, content rides on opaque sand so
-     dark text never has to fight the bright/animated beach behind it ---- */
-  :root[data-theme="light"] #main > section:not(.hero),
-  :root[data-theme="light"] .foot{
-    background:rgba(244,232,216,0.94) !important;
-  }
+  /* ---- keep the beach visible: sections stay transparent; only the
+     dark-tinted ones are neutralised, and exposed headings get a paper
+     halo so they hold up over the golden water / red sky. Every actual
+     block of body copy already sits on its own opaque .panel card. ---- */
+  :root[data-theme="light"] .timeline-sec,
+  :root[data-theme="light"] .lead-sec,
+  :root[data-theme="light"] .casefiles-sec{ background:none; }
   :root[data-theme="light"] .topbar{
-    background:linear-gradient(180deg, rgba(250,242,231,0.98), rgba(250,242,231,0.9));
+    background:linear-gradient(180deg, rgba(250,242,231,0.97), rgba(250,242,231,0.72));
   }
-  :root[data-theme="light"] .namebar{ background:rgba(250,242,231,0.96); }
+  :root[data-theme="light"] .namebar{ background:rgba(250,242,231,0.95); }
+  :root[data-theme="light"] .foot{ background:rgba(246,236,221,0.62); }
   :root[data-theme="light"] .sec-sub{ color:var(--ink-dim); }
   :root[data-theme="light"] .legend,
   :root[data-theme="light"] .cf-hint,
   :root[data-theme="light"] .flare-hint{ color:var(--ink-dim); }
+  :root[data-theme="light"] .sec-h,
+  :root[data-theme="light"] .sec-sub,
+  :root[data-theme="light"] .legend,
+  :root[data-theme="light"] .cf-hint,
+  :root[data-theme="light"] .flare-hint,
+  :root[data-theme="light"] .foot{
+    text-shadow:0 1px 3px rgba(255,249,238,0.9), 0 0 12px rgba(255,249,238,0.6);
+  }
+  /* certificate + leadership frames — identical, visibly bordered */
+  :root[data-theme="light"] .certs,
+  :root[data-theme="light"] .cmd-log{ background:var(--line-2); border-color:var(--line-2); }
 
   /* ---- Capability Constellation: the .node chips had a baked-in dark
      background (invisible in daylight) — give them a light card ---- */
@@ -1597,7 +1610,7 @@
 
   <!-- ========== LEADERSHIP ========== -->
   <section class="lead-sec" id="leadership" aria-labelledby="ld-h">
-    <h2 id="ld-h" class="sec-h">◦ Command Record — Leadership</h2>
+    <h2 id="ld-h" class="sec-h">◦ Leadership</h2>
     <p class="sec-sub">Where the work was led, drawn from the record</p>
     <ul class="cmd-log">
       <li class="cmd-row"><span class="c-verb">Led</span><span class="c-txt">End-to-end procurement, SAP&nbsp;PLM/DMS and business operations across India, Germany, the Netherlands and China.<span class="c-where">Cross-border · 4.5+ years</span></span></li>
@@ -4113,6 +4126,24 @@
     bctx.restore();
   }
 
+  /* rolling green hills for the far shore — a silhouette that rises above
+     the waterline, with a soft valley at centre so the sun sits in the gap */
+  function drawHills(wl, amp, colr, seed, phase){
+    bctx.fillStyle = colr;
+    bctx.beginPath();
+    bctx.moveTo(-30, wl + 6);
+    var steps = 12;
+    for (var i = 0; i <= steps; i++){
+      var x = -30 + (bw + 60) * (i / steps);
+      var ridge = 0.5 + 0.5 * Math.sin(seed + i * 0.9 + (phase || 0)) * Math.cos(seed * 0.5 + i * 0.4);
+      var notch = 1 - 0.62 * Math.exp(-Math.pow((x - bw * 0.5) / (bw * 0.2), 2));
+      bctx.lineTo(x, wl - ridge * amp * notch);
+    }
+    bctx.lineTo(bw + 30, wl + 6);
+    bctx.closePath();
+    bctx.fill();
+  }
+
   function drawBeach(t, pe, dt){
     var W = bw, H = bh;
     var intro = 1;
@@ -4134,71 +4165,84 @@
     bctx.scale(zoom, zoom);
     bctx.translate(-pivotX, -pivotY);
 
-    /* ---- sky: dusk gradient, warm toward the horizon ---- */
+    /* ---- sky: reddish dusk — mauve up high into deep coral at the horizon ---- */
     var sky = bctx.createLinearGradient(0, -H * 0.5, 0, horizon);
-    sky.addColorStop(0.00, "#7f93a6");
-    sky.addColorStop(0.42, "#c9b9a6");
-    sky.addColorStop(0.72, "#f3c68f");
-    sky.addColorStop(0.90, "#ffb066");
-    sky.addColorStop(1.00, "#ff9450");
+    sky.addColorStop(0.00, "#8b6b83");
+    sky.addColorStop(0.36, "#bd7d76");
+    sky.addColorStop(0.64, "#e08d68");
+    sky.addColorStop(0.85, "#f0824f");
+    sky.addColorStop(1.00, "#e75f38");
     bctx.fillStyle = sky;
     bctx.fillRect(-W, -H, W * 3, horizon + H);
-
-    /* thin warm-lit cloud streaks near the horizon */
-    for (var c = 0; c < 4; c++){
-      var cy = horizon - minDim * (0.05 + c * 0.045);
-      var cw = W * (0.5 + c * 0.13);
-      var cx0 = W * (0.22 + 0.1 * c) + (REDUCED ? 0 : ((t * 0.004 * (c % 2 ? 1 : -1)) % (W * 1.4)));
-      var cg = bctx.createLinearGradient(cx0 - cw / 2, 0, cx0 + cw / 2, 0);
-      cg.addColorStop(0, "rgba(255,222,184,0)");
-      cg.addColorStop(0.5, "rgba(255,216,172,0.45)");
-      cg.addColorStop(1, "rgba(255,222,184,0)");
-      bctx.fillStyle = cg;
-      bctx.beginPath();
-      bctx.ellipse(cx0, cy, cw / 2, minDim * 0.011, 0, 0, TAU);
-      bctx.fill();
-    }
 
     var sunX = W * 0.5;
     var sunR = Math.max(30, minDim * 0.085);
 
-    /* ---- sea ---- */
-    var sea = bctx.createLinearGradient(0, horizon, 0, H);
-    sea.addColorStop(0.00, "#e9bd8b");   // horizon takes the sky's warmth
-    sea.addColorStop(0.10, "#c99a7d");
-    sea.addColorStop(0.34, "#8f8794");
-    sea.addColorStop(0.66, "#5b6b78");
-    sea.addColorStop(1.00, "#3c4f5c");
-    bctx.fillStyle = sea;
-    bctx.fillRect(-W, horizon, W * 3, seaH + 2);
+    /* ---- a few soft clouds, warm-lit undersides, drifting slowly ---- */
+    var CLOUDS = [
+      { bx:0.20, by:0.34, s:1.15, spd:0.006 },
+      { bx:0.63, by:0.20, s:0.85, spd:0.004 },
+      { bx:0.84, by:0.46, s:1.35, spd:0.009 },
+      { bx:0.42, by:0.60, s:0.70, spd:0.012 }
+    ];
+    for (var ci = 0; ci < CLOUDS.length; ci++){
+      var cl = CLOUDS[ci];
+      var cs = minDim * 0.05 * cl.s;
+      var span = W + cs * 8;
+      var ccx = ((cl.bx * W + (REDUCED ? 0 : t * cl.spd)) % span + span) % span - cs * 2;
+      var ccy = horizon * cl.by + minDim * 0.02;
+      var puffs = [[0,0,1],[-0.9,0.16,0.7],[0.92,0.12,0.75],[-0.35,-0.34,0.6],[0.46,-0.3,0.62]];
+      for (var pi = 0; pi < puffs.length; pi++){
+        var px = ccx + puffs[pi][0] * cs, py = ccy + puffs[pi][1] * cs, pr = cs * puffs[pi][2];
+        var cgrad = bctx.createRadialGradient(px, py + pr * 0.35, 0, px, py, pr);
+        cgrad.addColorStop(0.00, "rgba(255,231,212,0.9)");
+        cgrad.addColorStop(0.62, "rgba(238,193,176,0.62)");
+        cgrad.addColorStop(1.00, "rgba(210,146,138,0)");
+        bctx.fillStyle = cgrad;
+        bctx.beginPath(); bctx.arc(px, py, pr, 0, TAU); bctx.fill();
+      }
+    }
 
-    /* ---- the setting sun: centre well below the waterline so only
-            ~30% of the top half shows; strong glow on the horizon ---- */
+    /* ---- setting sun: mostly below the waterline (~30% of the top shows) ---- */
     var glow = bctx.createRadialGradient(sunX, horizon, 0, sunX, horizon, sunR * 6);
-    glow.addColorStop(0.00, "rgba(255,238,200,0.9)");
-    glow.addColorStop(0.30, "rgba(255,201,133,0.5)");
-    glow.addColorStop(1.00, "rgba(255,178,110,0)");
+    glow.addColorStop(0.00, "rgba(255,226,180,0.92)");
+    glow.addColorStop(0.30, "rgba(255,168,110,0.5)");
+    glow.addColorStop(1.00, "rgba(240,110,70,0)");
     bctx.fillStyle = glow;
     bctx.beginPath(); bctx.arc(sunX, horizon, sunR * 6, 0, TAU); bctx.fill();
     bctx.save();
     bctx.beginPath(); bctx.rect(-W, -H, W * 3, horizon + H); bctx.clip();   // sky only
-    var sunCY = horizon + sunR * 0.72;
+    var sunCY = horizon + sunR * 0.64;
     var disc = bctx.createRadialGradient(sunX, sunCY - sunR * 0.3, 0, sunX, sunCY, sunR);
-    disc.addColorStop(0, "#fff6dd");
-    disc.addColorStop(0.6, "#ffe0a0");
-    disc.addColorStop(1, "#ffb463");
+    disc.addColorStop(0, "#fff2cf");
+    disc.addColorStop(0.55, "#ffcf82");
+    disc.addColorStop(1, "#ff9a4d");
     bctx.fillStyle = disc;
     bctx.beginPath(); bctx.arc(sunX, sunCY, sunR, 0, TAU); bctx.fill();
     bctx.restore();
 
-    /* mirrored sun column on the water — bright at the horizon, breaking up toward shore */
+    /* ---- green hills on the far shore, rising from the waterline ---- */
+    drawHills(horizon, minDim * 0.070, "rgba(78,108,80,0.5)",  11.3, t * 0.00002);
+    drawHills(horizon, minDim * 0.046, "rgba(48,80,54,0.82)",  4.7,  0);
+
+    /* ---- sea: golden all the way down ---- */
+    var sea = bctx.createLinearGradient(0, horizon, 0, H);
+    sea.addColorStop(0.00, "#ffde99");
+    sea.addColorStop(0.16, "#f3c672");
+    sea.addColorStop(0.45, "#dfa957");
+    sea.addColorStop(0.75, "#c68f44");
+    sea.addColorStop(1.00, "#b17d39");
+    bctx.fillStyle = sea;
+    bctx.fillRect(-W, horizon, W * 3, seaH + 2);
+
+    /* mirrored sun column — brilliant gold near the horizon, breaking toward shore */
     for (var r = 0; r < 44; r++){
       var f = r / 44;
       var ry = horizon + f * seaH * 0.92;
       var flick = REDUCED ? 0.6 : (0.4 + 0.6 * Math.abs(Math.sin(t * 0.004 + r * 0.7)));
       var rw = sunR * (0.55 + f * 3.6) * (0.5 + 0.5 * flick);
       var seg = 3 + Math.floor(f * 7);
-      bctx.fillStyle = "rgba(255," + Math.round(230 - f * 42) + "," + Math.round(188 - f * 46) + "," + (0.5 * (1 - f) * flick).toFixed(3) + ")";
+      bctx.fillStyle = "rgba(255," + Math.round(244 - f * 44) + "," + Math.round(208 - f * 66) + "," + (0.58 * (1 - f) * flick).toFixed(3) + ")";
       for (var k = 0; k < seg; k++){
         var bwid = (rw / seg) * (0.4 + rnd(r * 3.1 + k) * 0.6);
         var bx = sunX - rw / 2 + (k + 0.5) * (rw / seg) + (REDUCED ? 0 : Math.sin(t * 0.003 + r + k) * rw * 0.03);
@@ -4207,7 +4251,7 @@
     }
 
     /* perspective swell lines — larger and further apart nearer the shore */
-    bctx.strokeStyle = "rgba(250,244,228,0.13)";
+    bctx.strokeStyle = "rgba(255,248,224,0.16)";
     for (var wv = 0; wv < 7; wv++){
       var wf = wv / 7;
       var wy = horizon + Math.pow(wf, 1.6) * seaH * 0.8;
@@ -4234,8 +4278,8 @@
     var wash = REDUCED ? 0.5 : (Math.sin(t * 0.0008) * 0.5 + 0.5);
     var swashY = beachTop - (H - beachTop) * 0.22 * wash;
     var dry = bctx.createLinearGradient(0, beachTop - 40, 0, H);
-    dry.addColorStop(0, "#ead0a0");
-    dry.addColorStop(1, "#d3a874");
+    dry.addColorStop(0, "#efd6a6");
+    dry.addColorStop(1, "#d8b47e");
     bctx.fillStyle = dry;
     bctx.beginPath();
     bctx.moveTo(-20, H + 20);
@@ -4244,9 +4288,9 @@
     bctx.lineTo(W + 20, H + 20);
     bctx.closePath(); bctx.fill();
     var wet = bctx.createLinearGradient(0, swashY - 12, 0, beachTop + 44);
-    wet.addColorStop(0, "rgba(255,214,168,0.5)");
-    wet.addColorStop(0.5, "rgba(196,150,120,0.32)");
-    wet.addColorStop(1, "rgba(150,120,100,0)");
+    wet.addColorStop(0, "rgba(255,198,150,0.52)");
+    wet.addColorStop(0.5, "rgba(224,146,116,0.32)");
+    wet.addColorStop(1, "rgba(170,120,100,0)");
     bctx.fillStyle = wet;
     bctx.beginPath();
     bctx.moveTo(-20, beachTop + 44);
