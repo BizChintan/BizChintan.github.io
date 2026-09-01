@@ -1345,13 +1345,13 @@
   :root[data-theme="light"]{
     --bg:        #f4e7d3;   /* warm sand */
     --bg-2:      #ecd9bd;
-    --panel:     #fff8ef;
-    --panel-2:   #f6e8d4;
-    --line:      rgba(110,72,40,0.18);
-    --line-2:    rgba(110,72,40,0.34);
-    --ink:       #2c1e12;   /* ~12:1 on --bg */
-    --ink-dim:   #5f4a33;   /* ~5.6:1 on --bg */
-    --ink-faint: #806647;
+    --panel:     #fffaf2;
+    --panel-2:   #f6e9d6;
+    --line:      rgba(60,45,30,0.20);
+    --line-2:    rgba(60,45,30,0.38);
+    --ink:       #201c17;   /* warm near-black — crisp, ~14:1 on --bg */
+    --ink-dim:   #45403a;   /* ~8:1 on --bg */
+    --ink-faint: #6a635a;   /* ~4.7:1 on --bg */
     --teal:      #0a6b61;   /* deep lagoon — ~5:1 on sand */
     --teal-deep: #084f48;
     --amber:     #a8480a;   /* burnt sunset — ~6:1 on sand */
@@ -1361,6 +1361,13 @@
   :root[data-theme="light"] body{ background:var(--bg); color:var(--ink); }
   :root[data-theme="light"] a{ color:var(--teal); }
   :root[data-theme="light"] ::selection{ background:var(--amber); color:#fff; }
+  /* the mono/condensed micro-text reads thin on sand — firm it up in daylight */
+  :root[data-theme="light"] .mono{ font-weight:500; }
+  :root[data-theme="light"] .summary{ color:var(--ink); font-weight:500; }
+  :root[data-theme="light"] .role,
+  :root[data-theme="light"] .sec-sub,
+  :root[data-theme="light"] .kicker{ color:var(--ink-dim); }
+  :root[data-theme="light"] .sec-h{ color:var(--ink); }
 
   /* canvas fallback tint (the JS beach scene paints over this) */
   :root[data-theme="light"] #bg{
@@ -1380,9 +1387,10 @@
       rgba(244,231,211,0.94) 0%, rgba(244,231,211,0.66) 36%, rgba(244,231,211,0.16) 64%, rgba(244,231,211,0) 80%);
   }
   :root[data-theme="light"] .name-line{
-    text-shadow:0 2px 10px rgba(255,241,216,0.9), 0 1px 2px rgba(110,60,20,0.28);
+    color:var(--ink);
+    text-shadow:0 1px 0 rgba(255,246,230,0.9), 0 2px 14px rgba(255,241,216,0.7);
   }
-  :root[data-theme="light"] .name-line:last-of-type{ color:#4a3826; }
+  :root[data-theme="light"] .name-line:last-of-type{ color:#3a352e; }
 
   /* theme toggle button — mirrors .sound-toggle */
   .theme-toggle{
@@ -1407,48 +1415,11 @@
   #themeflash.go{ animation:themeWipe .72s var(--ease); }
   @keyframes themeWipe{ 0%{opacity:0} 18%{opacity:.96} 100%{opacity:0} }
 
-  /* invisible bird hit-targets (light) — live in the fixed .spacefacts layer */
-  .spacefacts .bird-hit{ pointer-events:auto; }
-  .bird-hit{
-    position:fixed; left:0; top:0; margin:0; padding:11px;
-    border:0; background:none; cursor:pointer;
-    font-size:0; line-height:0; will-change:transform;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .bird-hit::after{
-    content:""; display:block; width:14px; height:14px; border-radius:50%;
-  }
-  .bird-hit:focus-visible{ outline:none; }
-  .bird-hit:focus-visible::after{ box-shadow:0 0 0 2px var(--amber); }
-
-  /* plain-text fact presenter (light) — no box, sits in a side gutter,
-     does NOT track the bird, must not overlay the portfolio content */
-  .beachfact{
-    position:fixed; z-index:120; width:min(280px, calc(100vw - 32px));
-    padding:0 0 0 12px; border-left:2px solid var(--amber);
-    font-family:var(--font-sans);
-    animation:bfIn .3s var(--ease);
-  }
-  @keyframes bfIn{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
-  .bf-label{
-    display:block; font-family:var(--font-mono); font-size:10px; letter-spacing:.18em;
-    text-transform:uppercase; color:var(--amber); margin-bottom:6px;
-  }
-  .bf-text{ margin:0; font-size:13.5px; line-height:1.65; color:var(--ink); }
-  @media (max-width:640px){
-    .beachfact{
-      left:14px !important; right:14px; top:auto !important; bottom:14px;
-      width:auto; padding:14px; border-left:2px solid var(--amber);
-      background:var(--bg); box-shadow:0 -10px 34px rgba(90,55,20,0.22);
-    }
-  }
-
-  /* show the right ambient layer for the active theme */
+  /* the space ambient layers are hidden while the beach is showing
+     (birds + ship are drawn straight onto the canvas, no DOM targets) */
   :root[data-theme="light"] .spacefact,
   :root[data-theme="light"] .planet-hit,
   :root[data-theme="light"] .sun-counter{ display:none !important; }
-  :root:not([data-theme="light"]) .bird-hit,
-  :root:not([data-theme="light"]) .beachfact{ display:none !important; }
 
   @media (prefers-reduced-motion: reduce){
     #themeflash.go{ animation:none; }
@@ -1754,12 +1725,6 @@
     </div>
     <p class="readout-origin" id="roOrigin">—</p>
   </div>
-</div>
-
-<!-- ========== PLAIN-TEXT FACT PRESENTER (light theme — birds + ship) ========== -->
-<div class="beachfact" id="beachfact" role="dialog" aria-label="Fact" hidden>
-  <span class="bf-label mono" id="bfLabel">—</span>
-  <p class="bf-text" id="bfText">—</p>
 </div>
 
 <!-- ========== LIGHTWEIGHT FACT POPOVER (space facts + planet facts) ========== -->
@@ -3968,187 +3933,134 @@
   var themeFlash  = document.getElementById("themeflash");
   var introT = 1, introFrom = THEME, introStart = 0;
   var BEACH_TWEEN = 1500;                       // ms — scene-arrival zoom
-  var shipScreen = { x:0, y:0, r:0 };
 
   // clamp01() is already defined above (space-egg helpers) — reuse it
   function smooth01(v){ v = clamp01(v); return v * v * (3 - 2 * v); }
   function easeOutCubic(v){ return 1 - Math.pow(1 - clamp01(v), 3); }
 
-  // 8 "scary facts about Earth" — same count as SPACE_FACTS; css = reduced-motion resting spot
-  var EARTH_FACTS = [
-    { label:"MASS EXTINCTIONS",     text:"Earth has been through at least five mass extinctions. The worst, about 252 million years ago, wiped out roughly 90% of all species.", css:{ top:"13%", left:"3.5%" } },
-    { label:"THE TOBA ERUPTION",    text:"Around 74,000 years ago a supervolcano in Sumatra erupted with such force it may have cut the human population to a few thousand.", css:{ top:"40%", left:"3%" } },
-    { label:"MAGNETIC REVERSALS",   text:"Earth's magnetic poles have flipped hundreds of times. During a reversal the field that shields us from solar radiation weakens sharply for centuries.", css:{ top:"60%", left:"3.5%" } },
-    { label:"THE SIXTH EXTINCTION", text:"Species are vanishing tens to hundreds of times faster than the natural background rate — a mass extinction unfolding in real time.", css:{ top:"82%", left:"4%" } },
-    { label:"OCEAN DEOXYGENATION",  text:"The open ocean has lost about 2% of its dissolved oxygen since 1960, and low-oxygen dead zones keep spreading.", css:{ top:"10%", right:"4.5%" } },
-    { label:"CARBON RECORD",        text:"Atmospheric CO2 is higher now than at any point in at least 800,000 years, and rising faster than in any known natural episode.", css:{ top:"30%", right:"4.5%" } },
-    { label:"ATLANTIC CIRCULATION", text:"The ocean current that keeps north-west Europe mild is at its weakest in over a thousand years and could stall this century.", css:{ top:"52%", right:"4%" } },
-    { label:"UNSEEN ASTEROIDS",     text:"An estimated 25,000 near-Earth asteroids larger than 140 m exist. Most have still not been found.", css:{ top:"84%", right:"5.5%" } }
+  /* Birds are decorative only — no facts, no DOM hit-targets. Eight gulls
+     glide over the sea; the css spots are only reduced-motion rest points. */
+  var BIRD_SPOTS = [
+    { top:0.14, x:0.16 }, { top:0.22, x:0.72 }, { top:0.30, x:0.40 }, { top:0.18, x:0.86 },
+    { top:0.26, x:0.10 }, { top:0.34, x:0.58 }, { top:0.12, x:0.50 }, { top:0.38, x:0.30 }
   ];
-  var SHIP_FACT = { label:"THE LONG SILENCE", text:"In four to five billion years the Sun will swell into a red giant and the ocean this shore belongs to will boil away entirely." };
+  var SHIP_SPEED = 24;            // px/s across the scene, left -> right
+  var shipDrift  = 0.35;          // 0..1-ish position of the ship across the scene
 
-  /* --- plain-text presenter: no box, drops into a side gutter, does NOT
-         track the bird, and is kept clear of the portfolio content --- */
-  var beachfact = document.getElementById("beachfact");
-  var bfLabel   = document.getElementById("bfLabel");
-  var bfText    = document.getElementById("bfText");
-  var bfTrigger = null;
-
-  function placeBeachFact(ar){
-    beachfact.style.visibility = "hidden";
-    beachfact.hidden = false;
-    var rr = beachfact.getBoundingClientRect();
-    var m = 16;
-    var leftSide = (ar.left + ar.right) / 2 < window.innerWidth / 2;
-    var left = leftSide ? m : (window.innerWidth - m - rr.width);
-    var top  = clamp01(ar.top / Math.max(1, window.innerHeight)) * Math.max(0, window.innerHeight - rr.height - 2 * m) + m;
-    beachfact.style.left = Math.round(Math.max(m, left)) + "px";
-    beachfact.style.top  = Math.round(Math.max(m, top)) + "px";
-    beachfact.style.visibility = "";
-  }
-  function openBeachFact(label, text, triggerEl){
-    if (bfTrigger && bfTrigger !== triggerEl) bfTrigger.setAttribute("aria-expanded", "false");
-    bfTrigger = triggerEl || null;
-    if (bfTrigger) bfTrigger.setAttribute("aria-expanded", "true");
-    bfLabel.textContent = label;
-    bfText.textContent = text;
-    var ar = triggerEl ? triggerEl.getBoundingClientRect()
-      : { left: window.innerWidth - 1, right: window.innerWidth, top: window.innerHeight * 0.4, height: 0 };
-    placeBeachFact(ar);
-    document.addEventListener("keydown", onBeachKey, true);
-    setTimeout(function(){ document.addEventListener("pointerdown", onBeachOutside, true); }, 0);
-  }
-  function closeBeachFact(){
-    if (!beachfact || beachfact.hidden) return;
-    beachfact.hidden = true;
-    if (bfTrigger){ bfTrigger.setAttribute("aria-expanded", "false"); bfTrigger = null; }
-    document.removeEventListener("keydown", onBeachKey, true);
-    document.removeEventListener("pointerdown", onBeachOutside, true);
-  }
-  function onBeachKey(e){ if (e.key === "Escape"){ e.preventDefault(); closeBeachFact(); } }
-  function onBeachOutside(e){
-    var t = e.target;
-    if (beachfact.contains(t)) return;
-    if (t.closest && t.closest(".bird-hit, #shipHit")) return;
-    closeBeachFact();
-  }
-
-  // --- birds: invisible DOM hit-targets in the fixed .spacefacts layer, drawn on canvas ---
-  var birdBtns = EARTH_FACTS.map(function(f, i){
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "bird-hit mono";
-    b.hidden = (THEME !== "light");
-    b.setAttribute("aria-haspopup", "dialog");
-    b.setAttribute("aria-expanded", "false");
-    b.setAttribute("aria-label", f.label + " — reveal a fact about Earth");
-    b.addEventListener("click", function(){ openBeachFact(f.label, f.text, b); });
-    factLayer.appendChild(b);
-    var ang = rnd(i * 3.9 + 21) * Math.PI * 2;
-    var spd = 12 + rnd(i * 2.3 + 22) * 16;
-    b._bd = {
-      x: (0.08 + rnd(i * 5.1 + 23) * 0.84) * window.innerWidth,
-      y: (0.08 + rnd(i * 6.7 + 24) * 0.40) * window.innerHeight,
-      vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd * 0.4,
-      wob: rnd(i * 7.3 + 25) * Math.PI * 2,
+  var birds = BIRD_SPOTS.map(function(p, i){
+    var ang = (rnd(i * 3.9 + 21) - 0.5) * 0.8;            // near-horizontal glide
+    var spd = 9 + rnd(i * 2.3 + 22) * 13;
+    return {
+      x: p.x * window.innerWidth,
+      y: (0.08 + p.top) * window.innerHeight * 0.9,
+      vx: Math.cos(ang) * spd * (rnd(i + 3) < 0.5 ? -1 : 1),
+      vy: Math.sin(ang) * spd * 0.5,
+      wob:  rnd(i * 7.3 + 25) * Math.PI * 2,
       flap: rnd(i * 8.9 + 26) * Math.PI * 2,
-      sz: 8 + Math.round(rnd(i * 9.4 + 27) * 6),
-      w: 0, h: 0
+      beat: 5 + rnd(i * 4.1 + 30) * 5,
+      sz:   6 + Math.round(rnd(i * 9.4 + 27) * 5),
+      glide: rnd(i * 5.5 + 31) > 0.6
     };
-    return b;
   });
-  var shipHitBtn = document.createElement("button");
-  shipHitBtn.type = "button";
-  shipHitBtn.id = "shipHit";
-  shipHitBtn.className = "bird-hit";
-  shipHitBtn.hidden = (THEME !== "light");
-  shipHitBtn.style.padding = "0";
-  shipHitBtn.setAttribute("aria-haspopup", "dialog");
-  shipHitBtn.setAttribute("aria-expanded", "false");
-  shipHitBtn.setAttribute("aria-label", SHIP_FACT.label + " — the ship on the horizon");
-  shipHitBtn.addEventListener("click", function(){ openBeachFact(SHIP_FACT.label, SHIP_FACT.text, shipHitBtn); });
-  factLayer.appendChild(shipHitBtn);
 
-  function layoutBirds(scatter){
-    for (var i = 0; i < birdBtns.length; i++){
-      var b = birdBtns[i], s = b._bd; if (!s) continue;
-      s.w = b.offsetWidth || 30; s.h = b.offsetHeight || 30;
-      if (scatter){
-        var c = EARTH_FACTS[i].css;
-        s.x = c.left != null ? parseFloat(c.left) / 100 * window.innerWidth
-                             : window.innerWidth - parseFloat(c.right) / 100 * window.innerWidth - s.w;
-        s.y = parseFloat(c.top) / 100 * window.innerHeight;
-      }
-      s.x = Math.max(0, Math.min(window.innerWidth  - s.w, s.x));
-      s.y = Math.max(0, Math.min(window.innerHeight - s.h, s.y));
-      b.style.transform = "translate3d(" + s.x.toFixed(1) + "px," + s.y.toFixed(1) + "px,0)";
+  function layoutBirds(){
+    for (var i = 0; i < birds.length; i++){
+      var s = birds[i], p = BIRD_SPOTS[i];
+      s.x = p.x * window.innerWidth;
+      s.y = (0.08 + p.top) * window.innerHeight * 0.9;
     }
   }
   function stepBirds(dt){
     if (THEME !== "light" || REDUCED) return;
-    var W = window.innerWidth, H = window.innerHeight, band = H * 0.55;
-    for (var i = 0; i < birdBtns.length; i++){
-      var b = birdBtns[i], s = b._bd; if (!s) continue;
-      if (!s.w){ s.w = b.offsetWidth || 30; s.h = b.offsetHeight || 30; }
-      s.wob += dt * 0.8; s.flap += dt * (7 + (i % 3));
-      s.x += (s.vx + Math.cos(s.wob) * 5) * dt;
-      s.y += (s.vy + Math.sin(s.wob * 1.3) * 6) * dt;
-      if (s.x <= 0){ s.x = 0; s.vx = Math.abs(s.vx); }
-      else if (s.x >= W - s.w){ s.x = W - s.w; s.vx = -Math.abs(s.vx); }
-      if (s.y <= 0){ s.y = 0; s.vy = Math.abs(s.vy); }
-      else if (s.y >= band - s.h){ s.y = band - s.h; s.vy = -Math.abs(s.vy); }
-      b.style.transform = "translate3d(" + s.x.toFixed(1) + "px," + s.y.toFixed(1) + "px,0)";
+    var W = window.innerWidth, band = window.innerHeight * 0.5;
+    shipDrift += (SHIP_SPEED / Math.max(1, W)) * dt;
+    if (shipDrift > 1.25) shipDrift -= 1.5;               // exit right, re-enter from the left
+    for (var i = 0; i < birds.length; i++){
+      var s = birds[i];
+      s.wob += dt * 0.7; s.flap += dt * s.beat;
+      s.x += (s.vx + Math.cos(s.wob) * 4) * dt;
+      s.y += (s.vy + Math.sin(s.wob * 1.2) * 5) * dt;
+      if (s.x < -40) s.x = W + 40; else if (s.x > W + 40) s.x = -40;
+      if (s.y < 12){ s.y = 12; s.vy = Math.abs(s.vy); }
+      else if (s.y > band){ s.y = band; s.vy = -Math.abs(s.vy); }
     }
   }
-  function drawGull(x, y, flap, sz){
-    var d = Math.sin(flap) * 0.5 + 0.5;
-    var span = sz, rise = sz * (0.14 + d * 0.5);
+  function drawGull(x, y, flap, sz, glide){
+    var d = glide ? 0.16 : (Math.sin(flap) * 0.5 + 0.5);
+    var span = sz, rise = sz * (0.10 + d * 0.62);
     bctx.beginPath();
-    bctx.moveTo(x - span, y);
-    bctx.quadraticCurveTo(x - span * 0.4, y - rise, x, y);
-    bctx.quadraticCurveTo(x + span * 0.4, y - rise, x + span, y);
+    bctx.moveTo(x - span, y + rise * 0.22);
+    bctx.quadraticCurveTo(x - span * 0.34, y - rise, x, y);
+    bctx.quadraticCurveTo(x + span * 0.34, y - rise, x + span, y + rise * 0.22);
     bctx.stroke();
   }
   function drawBirds(t){
     if (THEME !== "light") return;
-    bctx.strokeStyle = "rgba(58,40,28,0.72)";
-    bctx.lineWidth = 1.6; bctx.lineCap = "round";
-    for (var i = 0; i < birdBtns.length; i++){
-      var s = birdBtns[i]._bd; if (!s || birdBtns[i].hidden) continue;
-      drawGull(s.x + (s.w || 30) * 0.5, s.y + (s.h || 30) * 0.5, s.flap, s.sz);
+    bctx.strokeStyle = "rgba(44,36,30,0.55)";
+    bctx.lineWidth = 1.4; bctx.lineCap = "round";
+    for (var i = 0; i < birds.length; i++){
+      var s = birds[i];
+      drawGull(s.x, s.y, s.flap, s.sz, s.glide);
     }
     bctx.lineCap = "butt";
   }
 
-  function drawRidge(baseY, amp, colr, seed){
-    bctx.fillStyle = colr;
+  /* a distant pirate ship in silhouette — square-rigged, three masts,
+     a pennant at the main. cx,wl = centre + waterline; scale sets size. */
+  function drawPirateShip(cx, wl, scale, t){
+    var s = scale, sway = REDUCED ? 0 : Math.sin(t * 0.0013) * s * 0.12;
+    bctx.save();
+    bctx.translate(cx, wl + sway);
+    if (!REDUCED) bctx.rotate(Math.sin(t * 0.0011) * 0.02);
+    bctx.globalAlpha = 0.85;
+    bctx.fillStyle = "#241c14";
+    bctx.strokeStyle = "#241c14";
+    bctx.lineWidth = Math.max(0.6, s * 0.06);
+
+    // hull — raised stern (left) and bow (right), shallow keel
     bctx.beginPath();
-    bctx.moveTo(-20, baseY + amp);
-    var steps = 8;
-    for (var i = 0; i <= steps; i++){
-      var x = -20 + (bw + 40) * (i / steps);
-      var h = (Math.sin(seed + i * 1.3) * 0.5 + Math.sin(seed * 2 + i * 0.7) * 0.5) * amp;
-      bctx.lineTo(x, baseY - h);
+    bctx.moveTo(-s * 3.0, -s * 0.1);
+    bctx.quadraticCurveTo(-s * 3.5, -s * 1.05, -s * 2.2, -s * 1.05);
+    bctx.lineTo(s * 2.4, -s * 1.05);
+    bctx.quadraticCurveTo(s * 3.8, -s * 0.95, s * 4.0, -s * 0.3);
+    bctx.quadraticCurveTo(s * 2.6, s * 0.6, 0, s * 0.66);
+    bctx.quadraticCurveTo(-s * 2.1, s * 0.5, -s * 3.0, -s * 0.1);
+    bctx.closePath(); bctx.fill();
+
+    // bowsprit
+    bctx.beginPath();
+    bctx.moveTo(s * 3.5, -s * 0.65); bctx.lineTo(s * 5.4, -s * 1.45); bctx.stroke();
+
+    // three masts + two square sails each (bellied toward the wind, to the right)
+    var masts = [-s * 1.9, s * 0.05, s * 2.0];
+    var mh    = [s * 5.2, s * 6.2, s * 4.6];
+    for (var m = 0; m < 3; m++){
+      var mx = masts[m];
+      bctx.beginPath(); bctx.moveTo(mx, -s * 1.05); bctx.lineTo(mx, -s * 1.05 - mh[m]); bctx.stroke();
+      for (var sail = 0; sail < 2; sail++){
+        var yTop = -s * 1.05 - mh[m] * (sail === 0 ? 0.92 : 0.5);
+        var yBot = -s * 1.05 - mh[m] * (sail === 0 ? 0.54 : 0.14);
+        var half = (sail === 0 ? 1.5 : 1.12) * s;
+        var belly = s * 0.55;
+        bctx.beginPath();
+        bctx.moveTo(mx - half, yTop);
+        bctx.quadraticCurveTo(mx + belly, (yTop + yBot) / 2, mx + half, yTop + s * 0.12);
+        bctx.lineTo(mx + half, yBot - s * 0.12);
+        bctx.quadraticCurveTo(mx + belly, (yTop + yBot) / 2 + s * 0.3, mx - half, yBot);
+        bctx.closePath(); bctx.fill();
+      }
     }
-    bctx.lineTo(bw + 20, baseY + amp);
-    bctx.closePath(); bctx.fill();
-  }
-  function drawShip(x, y, t){
-    var s = Math.max(7, minDim * 0.018);
-    if (!REDUCED) y += Math.sin(t * 0.0011) * s * 0.18;
-    bctx.fillStyle = "#2f2116";
+    // pennant on the main mast
+    var fx = masts[1], fy = -s * 1.05 - mh[1];
+    var fw = s * 1.7, fwv = REDUCED ? 0 : Math.sin(t * 0.006) * s * 0.28;
     bctx.beginPath();
-    bctx.moveTo(x - s * 1.5, y); bctx.lineTo(x + s * 1.5, y);
-    bctx.lineTo(x + s * 0.9, y + s * 0.55); bctx.lineTo(x - s * 0.9, y + s * 0.55);
+    bctx.moveTo(fx, fy);
+    bctx.quadraticCurveTo(fx + fw * 0.5, fy - s * 0.35 + fwv, fx + fw, fy + s * 0.12);
+    bctx.quadraticCurveTo(fx + fw * 0.5, fy + s * 0.5 + fwv, fx, fy + s * 0.55);
     bctx.closePath(); bctx.fill();
-    bctx.fillRect(x - s * 0.06, y - s * 2.4, s * 0.12, s * 2.4);
-    bctx.beginPath();
-    bctx.moveTo(x, y - s * 2.3); bctx.lineTo(x + s * 1.05, y - s * 0.15); bctx.lineTo(x, y - s * 0.15);
-    bctx.closePath(); bctx.fill();
-    bctx.beginPath();
-    bctx.moveTo(x, y - s * 2.05); bctx.lineTo(x - s * 0.95, y - s * 0.15); bctx.lineTo(x, y - s * 0.15);
-    bctx.closePath(); bctx.fill();
-    return s;
+
+    bctx.globalAlpha = 1;
+    bctx.restore();
   }
 
   function drawBeach(t, pe, dt){
@@ -4158,125 +4070,174 @@
       intro = easeOutCubic((performance.now() - introStart) / BEACH_TWEEN);
       if (intro >= 1) introT = 1;
     }
-    var spy  = 1 - smooth01(pe / 0.42);                 // 1 at top -> 0 pulled back
-    var zoom = 1 + 1.30 * spy;
-    if (introFrom === "dark" && intro < 1) zoom *= 1 + (1 - intro) * 7;
-
-    var horizon = H * (0.30 + 0.16 * smooth01(pe / 0.6));
-    var shipX = W * 0.62;
-    var shipY = horizon - Math.max(6, minDim * 0.012);
-    shipScreen.x = shipX; shipScreen.y = shipY;
+    var spy = 1 - smooth01(pe / 0.42);                  // 1 at top -> 0 pulled back
+    var horizon = H * (0.34 + 0.14 * smooth01(pe / 0.6));
+    var seaH = H - horizon;
+    // camera pivots on a FIXED point (horizon centre) so the moving ship
+    // never drags the view; the spyglass just zooms this pivot.
+    var pivotX = W * 0.5, pivotY = horizon;
+    var zoom = 1 + 1.12 * spy;
+    if (introFrom === "dark" && intro < 1) zoom *= 1 + (1 - intro) * 6.5;
 
     bctx.save();
-    bctx.translate(shipX, shipY);
+    bctx.translate(pivotX, pivotY);
     bctx.scale(zoom, zoom);
-    bctx.translate(-shipX, -shipY);
+    bctx.translate(-pivotX, -pivotY);
 
-    var sky = bctx.createLinearGradient(0, -H * 0.4, 0, horizon);
-    sky.addColorStop(0, "#f7e6bf"); sky.addColorStop(0.5, "#ffd9a1");
-    sky.addColorStop(0.82, "#ffbe86"); sky.addColorStop(1, "#ff9f6b");
+    /* ---- sky: dusk gradient, warm toward the horizon ---- */
+    var sky = bctx.createLinearGradient(0, -H * 0.5, 0, horizon);
+    sky.addColorStop(0.00, "#7f93a6");
+    sky.addColorStop(0.42, "#c9b9a6");
+    sky.addColorStop(0.72, "#f3c68f");
+    sky.addColorStop(0.90, "#ffb066");
+    sky.addColorStop(1.00, "#ff9450");
     bctx.fillStyle = sky;
     bctx.fillRect(-W, -H, W * 3, horizon + H);
 
-    var sunX = W * 0.62, sunY = horizon - minDim * 0.02;
-    var sunR = Math.max(20, minDim * 0.055);
-    var halo = bctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 5);
-    halo.addColorStop(0, "rgba(255,248,228,0.95)");
-    halo.addColorStop(0.22, "rgba(255,216,150,0.8)");
-    halo.addColorStop(1, "rgba(255,190,120,0)");
-    bctx.fillStyle = halo;
-    bctx.beginPath(); bctx.arc(sunX, sunY, sunR * 5, 0, TAU); bctx.fill();
-    bctx.fillStyle = "#fff5da";
-    bctx.beginPath(); bctx.arc(sunX, sunY, sunR, 0, TAU); bctx.fill();
-
-    drawRidge(horizon + 1, minDim * 0.05,  "rgba(120,96,120,0.30)", 1.7);
-    drawRidge(horizon + 1, minDim * 0.032, "rgba(96,78,104,0.42)",  4.1);
-
-    var sea = bctx.createLinearGradient(0, horizon, 0, H);
-    sea.addColorStop(0, "#eab784"); sea.addColorStop(0.12, "#cf9270");
-    sea.addColorStop(0.45, "#8a7684"); sea.addColorStop(1, "#4a5568");
-    bctx.fillStyle = sea;
-    bctx.fillRect(-W, horizon, W * 3, H - horizon + 2);
-
-    bctx.save();
-    bctx.beginPath(); bctx.rect(sunX - sunR * 1.6, horizon, sunR * 3.2, H - horizon); bctx.clip();
-    for (var g = 0; g < 26; g++){
-      var gy = horizon + (g / 26) * (H - horizon);
-      var gw = sunR * (0.3 + g / 20) * (0.6 + 0.4 * Math.sin(t * 0.004 + g));
-      bctx.globalAlpha = 0.5 * (1 - g / 30);
-      bctx.fillStyle = "rgba(255,240,205,0.9)";
-      bctx.fillRect(sunX - gw, gy, gw * 2, Math.max(1, (H - horizon) / 90));
+    /* thin warm-lit cloud streaks near the horizon */
+    for (var c = 0; c < 4; c++){
+      var cy = horizon - minDim * (0.05 + c * 0.045);
+      var cw = W * (0.5 + c * 0.13);
+      var cx0 = W * (0.22 + 0.1 * c) + (REDUCED ? 0 : ((t * 0.004 * (c % 2 ? 1 : -1)) % (W * 1.4)));
+      var cg = bctx.createLinearGradient(cx0 - cw / 2, 0, cx0 + cw / 2, 0);
+      cg.addColorStop(0, "rgba(255,222,184,0)");
+      cg.addColorStop(0.5, "rgba(255,216,172,0.45)");
+      cg.addColorStop(1, "rgba(255,222,184,0)");
+      bctx.fillStyle = cg;
+      bctx.beginPath();
+      bctx.ellipse(cx0, cy, cw / 2, minDim * 0.011, 0, 0, TAU);
+      bctx.fill();
     }
-    bctx.globalAlpha = 1;
+
+    var sunX = W * 0.5;
+    var sunR = Math.max(30, minDim * 0.085);
+
+    /* ---- sea ---- */
+    var sea = bctx.createLinearGradient(0, horizon, 0, H);
+    sea.addColorStop(0.00, "#e9bd8b");   // horizon takes the sky's warmth
+    sea.addColorStop(0.10, "#c99a7d");
+    sea.addColorStop(0.34, "#8f8794");
+    sea.addColorStop(0.66, "#5b6b78");
+    sea.addColorStop(1.00, "#3c4f5c");
+    bctx.fillStyle = sea;
+    bctx.fillRect(-W, horizon, W * 3, seaH + 2);
+
+    /* ---- the setting sun: centre well below the waterline so only
+            ~30% of the top half shows; strong glow on the horizon ---- */
+    var glow = bctx.createRadialGradient(sunX, horizon, 0, sunX, horizon, sunR * 6);
+    glow.addColorStop(0.00, "rgba(255,238,200,0.9)");
+    glow.addColorStop(0.30, "rgba(255,201,133,0.5)");
+    glow.addColorStop(1.00, "rgba(255,178,110,0)");
+    bctx.fillStyle = glow;
+    bctx.beginPath(); bctx.arc(sunX, horizon, sunR * 6, 0, TAU); bctx.fill();
+    bctx.save();
+    bctx.beginPath(); bctx.rect(-W, -H, W * 3, horizon + H); bctx.clip();   // sky only
+    var sunCY = horizon + sunR * 0.72;
+    var disc = bctx.createRadialGradient(sunX, sunCY - sunR * 0.3, 0, sunX, sunCY, sunR);
+    disc.addColorStop(0, "#fff6dd");
+    disc.addColorStop(0.6, "#ffe0a0");
+    disc.addColorStop(1, "#ffb463");
+    bctx.fillStyle = disc;
+    bctx.beginPath(); bctx.arc(sunX, sunCY, sunR, 0, TAU); bctx.fill();
     bctx.restore();
 
-    bctx.strokeStyle = "rgba(255,246,224,0.16)"; bctx.lineWidth = 1;
-    for (var wv = 0; wv < 5; wv++){
-      var wy = horizon + (wv + 1) / 6 * (H - horizon) * 0.62;
+    /* mirrored sun column on the water — bright at the horizon, breaking up toward shore */
+    for (var r = 0; r < 44; r++){
+      var f = r / 44;
+      var ry = horizon + f * seaH * 0.92;
+      var flick = REDUCED ? 0.6 : (0.4 + 0.6 * Math.abs(Math.sin(t * 0.004 + r * 0.7)));
+      var rw = sunR * (0.55 + f * 3.6) * (0.5 + 0.5 * flick);
+      var seg = 3 + Math.floor(f * 7);
+      bctx.fillStyle = "rgba(255," + Math.round(230 - f * 42) + "," + Math.round(188 - f * 46) + "," + (0.5 * (1 - f) * flick).toFixed(3) + ")";
+      for (var k = 0; k < seg; k++){
+        var bwid = (rw / seg) * (0.4 + rnd(r * 3.1 + k) * 0.6);
+        var bx = sunX - rw / 2 + (k + 0.5) * (rw / seg) + (REDUCED ? 0 : Math.sin(t * 0.003 + r + k) * rw * 0.03);
+        bctx.fillRect(bx - bwid / 2, ry, bwid, Math.max(1, seaH / 120));
+      }
+    }
+
+    /* perspective swell lines — larger and further apart nearer the shore */
+    bctx.strokeStyle = "rgba(250,244,228,0.13)";
+    for (var wv = 0; wv < 7; wv++){
+      var wf = wv / 7;
+      var wy = horizon + Math.pow(wf, 1.6) * seaH * 0.8;
+      var amp = 1 + wf * 6;
+      bctx.lineWidth = 0.8 + wf * 1.1;
       bctx.beginPath();
-      for (var wx = -20; wx <= W + 20; wx += 26){
-        var yy = wy + Math.sin(wx * 0.03 + t * 0.002 + wv) * (2 + wv);
+      for (var wx = -20; wx <= W + 20; wx += 22){
+        var yy = wy + Math.sin(wx * (0.02 - wf * 0.008) + t * 0.002 + wv) * amp;
         wx === -20 ? bctx.moveTo(wx, yy) : bctx.lineTo(wx, yy);
       }
       bctx.stroke();
     }
 
-    var beachTop = H * (0.72 + 0.10 * smooth01(pe / 0.7));
-    var wash = REDUCED ? 0.5 : (Math.sin(t * 0.0009) * 0.5 + 0.5);
-    var foamY = beachTop - (H - beachTop) * 0.18 * wash;
-    var sand = bctx.createLinearGradient(0, beachTop - 30, 0, H);
-    sand.addColorStop(0, "#ecd0a2"); sand.addColorStop(1, "#d5ac79");
-    bctx.fillStyle = sand;
+    /* ---- the pirate ship, small and far, drifting left -> right ----
+       while zoomed into the spyglass its wander is reined toward the
+       pivot so it stays framed; pulled back it roams the full width. */
+    var shipScale = Math.max(3.0, minDim * 0.0085);
+    var sx = (-0.14 + shipDrift) * W + W * 0.06;
+    sx = sx + (pivotX - sx) * spy * 0.72;
+    drawPirateShip(sx, horizon - shipScale * 0.1, shipScale, t);
+
+    /* ---- beach: wet reflective sheet + dry sand ---- */
+    var beachTop = H * (0.75 + 0.09 * smooth01(pe / 0.7));
+    var wash = REDUCED ? 0.5 : (Math.sin(t * 0.0008) * 0.5 + 0.5);
+    var swashY = beachTop - (H - beachTop) * 0.22 * wash;
+    var dry = bctx.createLinearGradient(0, beachTop - 40, 0, H);
+    dry.addColorStop(0, "#ead0a0");
+    dry.addColorStop(1, "#d3a874");
+    bctx.fillStyle = dry;
     bctx.beginPath();
     bctx.moveTo(-20, H + 20);
-    bctx.lineTo(-20, beachTop + (REDUCED ? 0 : Math.sin(t * 0.001) * 4));
-    bctx.quadraticCurveTo(W * 0.5, beachTop - 22, W + 20, beachTop + 8);
+    bctx.lineTo(-20, beachTop + (REDUCED ? 0 : Math.sin(t * 0.001) * 3));
+    bctx.quadraticCurveTo(W * 0.5, beachTop - 20, W + 20, beachTop + 10);
     bctx.lineTo(W + 20, H + 20);
     bctx.closePath(); bctx.fill();
-    bctx.strokeStyle = "rgba(255,252,244,0.7)";
-    bctx.lineWidth = Math.max(2, minDim * 0.006);
+    var wet = bctx.createLinearGradient(0, swashY - 12, 0, beachTop + 44);
+    wet.addColorStop(0, "rgba(255,214,168,0.5)");
+    wet.addColorStop(0.5, "rgba(196,150,120,0.32)");
+    wet.addColorStop(1, "rgba(150,120,100,0)");
+    bctx.fillStyle = wet;
     bctx.beginPath();
-    bctx.moveTo(-20, foamY + 10);
-    bctx.quadraticCurveTo(W * 0.5, foamY - 16, W + 20, foamY + 14);
+    bctx.moveTo(-20, beachTop + 44);
+    bctx.quadraticCurveTo(W * 0.5, beachTop - 6, W + 20, beachTop + 50);
+    bctx.lineTo(W + 20, swashY);
+    bctx.quadraticCurveTo(W * 0.5, swashY - 18, -20, swashY + 6);
+    bctx.closePath(); bctx.fill();
+    bctx.strokeStyle = "rgba(255,253,247,0.8)";
+    bctx.lineWidth = Math.max(2, minDim * 0.005);
+    bctx.beginPath();
+    bctx.moveTo(-20, swashY + 8);
+    bctx.quadraticCurveTo(W * 0.5, swashY - 16, W + 20, swashY + 12);
     bctx.stroke();
-
-    var shipR = drawShip(shipX, shipY, t);
-    shipScreen.r = Math.max(46, shipR * 2.6 * zoom);
 
     bctx.restore();
 
+    /* ---- pirate spyglass framing (screen space) ---- */
     if (spy > 0.004){
-      var cxp = shipScreen.x, cyp = shipScreen.y;
-      var maskR = minDim * (0.30 + (1 - spy) * 1.35);
+      var cxp = W * 0.5, cyp = horizon;
+      var maskR = minDim * (0.30 + (1 - spy) * 1.4);
       bctx.save();
       bctx.beginPath();
       bctx.rect(0, 0, W, H);
       bctx.arc(cxp, cyp, maskR, 0, TAU, true);
-      bctx.fillStyle = "rgba(18,11,6," + (0.94 * spy).toFixed(3) + ")";
+      bctx.fillStyle = "rgba(20,14,9," + (0.88 * spy).toFixed(3) + ")";
       bctx.fill("evenodd");
-      var vg = bctx.createRadialGradient(cxp, cyp, maskR * 0.72, cxp, cyp, maskR * 1.06);
-      vg.addColorStop(0, "rgba(18,11,6,0)");
-      vg.addColorStop(1, "rgba(18,11,6," + (0.6 * spy).toFixed(3) + ")");
+      var vg = bctx.createRadialGradient(cxp, cyp, maskR * 0.7, cxp, cyp, maskR * 1.08);
+      vg.addColorStop(0, "rgba(20,14,9,0)");
+      vg.addColorStop(1, "rgba(20,14,9," + (0.5 * spy).toFixed(3) + ")");
       bctx.fillStyle = vg;
-      bctx.beginPath(); bctx.arc(cxp, cyp, maskR * 1.06, 0, TAU); bctx.fill();
+      bctx.beginPath(); bctx.arc(cxp, cyp, maskR * 1.08, 0, TAU); bctx.fill();
       bctx.strokeStyle = "rgba(150,110,60," + (0.85 * spy).toFixed(3) + ")";
       bctx.lineWidth = Math.max(5, minDim * 0.018);
       bctx.beginPath(); bctx.arc(cxp, cyp, maskR, 0, TAU); bctx.stroke();
-      bctx.strokeStyle = "rgba(90,64,34," + (0.7 * spy).toFixed(3) + ")";
+      bctx.strokeStyle = "rgba(84,58,30," + (0.7 * spy).toFixed(3) + ")";
       bctx.lineWidth = Math.max(2, minDim * 0.006);
       bctx.beginPath(); bctx.arc(cxp, cyp, maskR + Math.max(4, minDim * 0.013), 0, TAU); bctx.stroke();
       bctx.restore();
     }
 
     drawBirds(t);
-
-    if (shipHitBtn && !shipHitBtn.hidden){
-      var hr = Math.max(30, shipScreen.r);
-      shipHitBtn.style.width  = Math.round(hr) + "px";
-      shipHitBtn.style.height = Math.round(hr) + "px";
-      shipHitBtn.style.transform =
-        "translate3d(" + (shipScreen.x - hr / 2).toFixed(1) + "px," + (shipScreen.y - hr / 2).toFixed(1) + "px,0)";
-    }
 
     if (introT < 1 && !bgRaf) bgRaf = requestAnimationFrame(renderBg);
   }
@@ -4293,9 +4254,7 @@
     var light = THEME === "light";
     if (light){ for (var i = 0; i < planetBtns.length; i++){ planetBtns[i].hidden = true; planetBtns[i]._vis = false; } }
     if (sunHitBtn) sunHitBtn.hidden = light ? true : (EGG.state !== "idle");
-    for (var j = 0; j < birdBtns.length; j++) birdBtns[j].hidden = !light;
-    if (shipHitBtn) shipHitBtn.hidden = !light;
-    if (light) layoutBirds(REDUCED);
+    if (light) layoutBirds();
     if (flareHint){
       flareHint.textContent = light
         ? "◎ peering through the glass · scroll to pull back to the shore"
@@ -4309,7 +4268,6 @@
     docEl.setAttribute("data-theme", THEME);
     try { localStorage.setItem("pf-theme", THEME); } catch (e){}
     if (typeof closeFact === "function") closeFact(false);
-    closeBeachFact();
     syncThemeToggle();
     refreshFactTargets();
     if (themeFlash && !REDUCED){
@@ -4369,13 +4327,9 @@
       if (activeOverlay) return;
       var onName = !!(e.target.closest && e.target.closest("#nameBtn"));
       var onUI = !!(e.target.closest && e.target.closest(
-        "header, footer, .overlay, .readout, .factpop, .beachfact, .egg-popup, .spacefact, .planet-hit, .bird-hit, .tl-marker, .node, a, button"));
+        "header, footer, .overlay, .readout, .factpop, .egg-popup, .spacefact, .planet-hit, .tl-marker, .node, a, button"));
       if (onUI && !onName) return;
-      if (THEME === "light"){                  // day theme: the ship is the only free-click target
-        var ds = Math.sqrt(Math.pow(e.clientX - shipScreen.x, 2) + Math.pow(e.clientY - shipScreen.y, 2));
-        if (ds < Math.max(48, shipScreen.r)) openBeachFact(SHIP_FACT.label, SHIP_FACT.text, shipHitBtn);
-        return;
-      }
+      if (THEME === "light") return;           // day theme: background is not interactive
       var d = Math.sqrt(Math.pow(e.clientX - sunScreen.x, 2) + Math.pow(e.clientY - sunScreen.y, 2));
       if (d < Math.max(56, sunScreen.r * 1.05)){
         sunActivated(e.clientX, e.clientY);   // Sun: flare + visible 100-tap counter
