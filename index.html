@@ -1367,7 +1367,15 @@
   :root[data-theme="light"] .role,
   :root[data-theme="light"] .sec-sub,
   :root[data-theme="light"] .kicker{ color:var(--ink-dim); }
-  :root[data-theme="light"] .sec-h{ color:var(--ink); }
+  /* section headings become solid label chips in daylight — legible on
+     sky, sea, hills, sand or a card, whatever scrolls behind them */
+  :root[data-theme="light"] .sec-h{
+    display:inline-flex; align-self:flex-start;
+    color:var(--panel); background:var(--ink);
+    padding:5px 13px 4px; letter-spacing:.2em;
+    box-shadow:0 2px 10px rgba(32,20,10,0.3);
+  }
+  :root[data-theme="light"] .sec-h::after{ display:none; }
 
   /* canvas fallback tint (the JS beach scene paints over this) */
   :root[data-theme="light"] #bg{
@@ -1409,13 +1417,12 @@
   :root[data-theme="light"] .legend,
   :root[data-theme="light"] .cf-hint,
   :root[data-theme="light"] .flare-hint{ color:var(--ink-dim); }
-  :root[data-theme="light"] .sec-h,
   :root[data-theme="light"] .sec-sub,
   :root[data-theme="light"] .legend,
   :root[data-theme="light"] .cf-hint,
   :root[data-theme="light"] .flare-hint,
   :root[data-theme="light"] .foot{
-    text-shadow:0 1px 3px rgba(255,249,238,0.9), 0 0 12px rgba(255,249,238,0.6);
+    text-shadow:0 1px 3px rgba(255,249,238,0.95), 0 0 12px rgba(255,249,238,0.7);
   }
   /* certificate + leadership frames — identical, visibly bordered */
   :root[data-theme="light"] .certs,
@@ -4009,6 +4016,8 @@
   ];
   var SHIP_SPEED = 24;            // px/s across the scene, left -> right
   var shipDrift  = 0.35;          // 0..1-ish position of the ship across the scene
+  var dolphins = [];
+  var dolphinTimer = 3 + rnd(41) * 4;   // seconds until the next pod surfaces
 
   var birds = BIRD_SPOTS.map(function(p, i){
     var ang = (rnd(i * 3.9 + 21) - 0.5) * 0.8;            // near-horizontal glide
@@ -4144,6 +4153,81 @@
     bctx.fill();
   }
 
+  /* ---- dolphins: surface every so often, follow a parabolic arc, dive back ---- */
+  function stepDolphins(dt, horizon, seaH){
+    dolphinTimer -= dt;
+    if (dolphinTimer <= 0 && dolphins.length < 2){
+      dolphinTimer = 7 + Math.random() * 11;
+      var dir = Math.random() < 0.5 ? -1 : 1;
+      var pod = 1 + (Math.random() < 0.35 ? 1 : 0);      // usually one, sometimes a pair
+      for (var p = 0; p < pod; p++){
+        dolphins.push({
+          x0:    (0.24 + Math.random() * 0.52) * bw,
+          baseY: horizon + seaH * (0.14 + Math.random() * 0.22),
+          range: (0.05 + Math.random() * 0.05) * bw * dir,
+          peak:  seaH * (0.10 + Math.random() * 0.06),
+          scale: Math.max(4, minDim * (0.010 + Math.random() * 0.006)),
+          dur:   1.1 + Math.random() * 0.5,
+          k:     -p * 0.22            // stagger a pair
+        });
+      }
+    }
+    for (var i = dolphins.length - 1; i >= 0; i--){
+      dolphins[i].k += dt / dolphins[i].dur;
+      if (dolphins[i].k >= 1.05) dolphins.splice(i, 1);
+    }
+  }
+  function drawDolphinBody(ds){
+    // drawn at the origin, nose toward +x, back toward -y
+    bctx.fillStyle = "rgba(26,52,66,0.92)";
+    bctx.beginPath();
+    bctx.moveTo(ds * 2.4, 0);
+    bctx.quadraticCurveTo(ds * 1.1, -ds * 0.95, -ds * 0.7, -ds * 0.6);
+    bctx.quadraticCurveTo(-ds * 1.8, -ds * 0.36, -ds * 2.5, -ds * 0.05);
+    bctx.quadraticCurveTo(-ds * 1.7, ds * 0.12, -ds * 0.6, ds * 0.18);
+    bctx.quadraticCurveTo(ds * 1.0, ds * 0.52, ds * 2.4, 0);
+    bctx.closePath(); bctx.fill();
+    // dorsal fin
+    bctx.beginPath();
+    bctx.moveTo(-ds * 0.05, -ds * 0.55);
+    bctx.quadraticCurveTo(-ds * 0.35, -ds * 1.45, -ds * 0.95, -ds * 0.5);
+    bctx.closePath(); bctx.fill();
+    // tail fluke
+    bctx.beginPath();
+    bctx.moveTo(-ds * 2.15, -ds * 0.02);
+    bctx.lineTo(-ds * 3.05, -ds * 0.55);
+    bctx.lineTo(-ds * 2.7, 0);
+    bctx.lineTo(-ds * 3.05, ds * 0.5);
+    bctx.closePath(); bctx.fill();
+  }
+  function drawDolphins(t){
+    for (var i = 0; i < dolphins.length; i++){
+      var d = dolphins[i];
+      if (d.k < 0 || d.k > 1) continue;
+      var k = d.k;
+      var dirSign = d.range >= 0 ? 1 : -1;
+      var px = d.x0 + d.range * k;
+      var py = d.baseY - d.peak * Math.sin(Math.PI * k);
+      var rot = Math.atan2(-d.peak * Math.PI * Math.cos(Math.PI * k), Math.abs(d.range));
+      bctx.save();
+      bctx.translate(px, py);
+      bctx.scale(dirSign, 1);
+      bctx.rotate(rot);
+      drawDolphinBody(d.scale);
+      bctx.restore();
+      if (k < 0.16 || k > 0.84){                       // splash on entry / exit
+        bctx.fillStyle = "rgba(255,255,255,0.7)";
+        for (var s = 0; s < 5; s++){
+          var sa = rnd(i * 7 + s + Math.floor(t * 0.06)) * TAU;
+          var sr = d.scale * (0.8 + rnd(i * 3 + s) * 2.2);
+          bctx.beginPath();
+          bctx.arc(px + Math.cos(sa) * sr, d.baseY + Math.abs(Math.sin(sa)) * sr * 0.45, Math.max(1, d.scale * 0.2), 0, TAU);
+          bctx.fill();
+        }
+      }
+    }
+  }
+
   function drawBeach(t, pe, dt){
     var W = bw, H = bh;
     var intro = 1;
@@ -4225,24 +4309,24 @@
     drawHills(horizon, minDim * 0.070, "rgba(78,108,80,0.5)",  11.3, t * 0.00002);
     drawHills(horizon, minDim * 0.046, "rgba(48,80,54,0.82)",  4.7,  0);
 
-    /* ---- sea: golden all the way down ---- */
+    /* ---- sea: ocean blue, deepening toward the shore ---- */
     var sea = bctx.createLinearGradient(0, horizon, 0, H);
-    sea.addColorStop(0.00, "#ffde99");
-    sea.addColorStop(0.16, "#f3c672");
-    sea.addColorStop(0.45, "#dfa957");
-    sea.addColorStop(0.75, "#c68f44");
-    sea.addColorStop(1.00, "#b17d39");
+    sea.addColorStop(0.00, "#8ec6d4");   // pale aqua where it meets the sky
+    sea.addColorStop(0.16, "#529ab5");
+    sea.addColorStop(0.45, "#2f7896");
+    sea.addColorStop(0.75, "#1f5a7c");
+    sea.addColorStop(1.00, "#164a66");
     bctx.fillStyle = sea;
     bctx.fillRect(-W, horizon, W * 3, seaH + 2);
 
-    /* mirrored sun column — brilliant gold near the horizon, breaking toward shore */
+    /* mirrored sun column — warm gold reflection running across the blue water */
     for (var r = 0; r < 44; r++){
       var f = r / 44;
       var ry = horizon + f * seaH * 0.92;
       var flick = REDUCED ? 0.6 : (0.4 + 0.6 * Math.abs(Math.sin(t * 0.004 + r * 0.7)));
       var rw = sunR * (0.55 + f * 3.6) * (0.5 + 0.5 * flick);
       var seg = 3 + Math.floor(f * 7);
-      bctx.fillStyle = "rgba(255," + Math.round(244 - f * 44) + "," + Math.round(208 - f * 66) + "," + (0.58 * (1 - f) * flick).toFixed(3) + ")";
+      bctx.fillStyle = "rgba(255," + Math.round(226 - f * 40) + "," + Math.round(170 - f * 50) + "," + (0.5 * (1 - f) * flick).toFixed(3) + ")";
       for (var k = 0; k < seg; k++){
         var bwid = (rw / seg) * (0.4 + rnd(r * 3.1 + k) * 0.6);
         var bx = sunX - rw / 2 + (k + 0.5) * (rw / seg) + (REDUCED ? 0 : Math.sin(t * 0.003 + r + k) * rw * 0.03);
@@ -4251,7 +4335,7 @@
     }
 
     /* perspective swell lines — larger and further apart nearer the shore */
-    bctx.strokeStyle = "rgba(255,248,224,0.16)";
+    bctx.strokeStyle = "rgba(232,246,250,0.16)";
     for (var wv = 0; wv < 7; wv++){
       var wf = wv / 7;
       var wy = horizon + Math.pow(wf, 1.6) * seaH * 0.8;
@@ -4272,6 +4356,10 @@
     var sx = (-0.14 + shipDrift) * W + W * 0.06;
     sx = sx + (pivotX - sx) * spy * 0.72;
     drawPirateShip(sx, horizon - shipScale * 0.1, shipScale, t);
+
+    /* ---- leaping dolphins — spawned now and then, arc out of the water and back ---- */
+    if (!REDUCED) stepDolphins(dt, horizon, seaH);
+    drawDolphins(t);
 
     /* ---- beach: wet reflective sheet + dry sand ---- */
     var beachTop = H * (0.75 + 0.09 * smooth01(pe / 0.7));
