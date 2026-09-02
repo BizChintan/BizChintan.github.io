@@ -254,19 +254,24 @@
   main{ position:relative; z-index:2; }
 
   section{ padding:clamp(48px,8vw,110px) clamp(18px,4vw,52px); }
+  /* dark theme: give each section a calm backing so the animated star /
+     solar-system layer behind it doesn't compete with the text for the eye */
+  :root:not([data-theme="light"]) #main > section:not(.hero){
+    background:rgba(6,9,15,0.66);
+  }
 
   .sec-h{
-    font-family:var(--font-mono); font-weight:500;
-    font-size:clamp(12px,1.6vw,14px); letter-spacing:.24em;
+    font-family:var(--font-mono); font-weight:600;
+    font-size:clamp(15px,2.1vw,19px); letter-spacing:.14em;
     text-transform:uppercase; color:var(--teal);
-    display:flex; align-items:center; gap:12px; margin:0 0 6px;
+    display:flex; align-items:center; gap:12px; margin:0 0 10px;
   }
   .sec-h::after{
     content:""; flex:1; height:1px;
     background:linear-gradient(90deg,var(--line-2),transparent);
   }
   .sec-sub{
-    font-family:var(--font-mono); font-size:12px; letter-spacing:.08em;
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em;
     color:var(--ink-faint); text-transform:uppercase; margin:0 0 34px;
   }
 
@@ -599,8 +604,11 @@
      Motion is CSS-keyframe (compositor-only) — no JS loop, no listeners
      beyond each button's click; disabled wholesale by reduced-motion. */
   .spacefacts{
-    position:fixed; inset:0; z-index:115; pointer-events:none;  /* above the panels — they roam over everything */
+    position:fixed; inset:0; z-index:1; pointer-events:none;  /* BELOW the content: drift behind text, never over it */
+    transition:opacity .3s ease;
   }
+  /* while any panel / popup is open, clear the drifting asteroids entirely */
+  body.panel-open .spacefacts{ opacity:0; pointer-events:none; }
   /* planet labels live in the page's own flow (inside #invertwrap), behind the
      content — so they orbit with the solar system yet page sections cover them
      as they scroll past, same fix as the Sun counter. Each label is
@@ -1003,7 +1011,7 @@
     transition:transform .28s var(--ease), border-color .28s var(--ease), box-shadow .28s var(--ease);
   }
   .casefile::before{
-    content:"CASE FILE"; position:absolute; top:0; left:20px;
+    content:"PROJECT"; position:absolute; top:0; left:20px;
     transform:translateY(-100%);
     font-family:var(--font-mono); font-size:9px; letter-spacing:.22em;
     color:var(--bg); background:var(--amber);
@@ -1537,9 +1545,9 @@
 <body class="no-js">
 <a class="skip" href="#main">Skip to content</a>
 <div id="scrollbar" aria-hidden="true"></div>
-<button type="button" id="nameBar" class="namebar" aria-haspopup="dialog" aria-controls="contactOverlay" aria-label="Chintan Dhamecha — open ID credentials">
+<button type="button" id="nameBar" class="namebar" aria-haspopup="dialog" aria-controls="contactOverlay" aria-label="Chintan Dhamecha — open contact card">
   <span class="nb-name">Chintan Dhamecha</span>
-  <span class="nb-hint" aria-hidden="true">open ID ▸</span>
+  <span class="nb-hint" aria-hidden="true">contact ▸</span>
 </button>
 <canvas id="bg" aria-hidden="true"></canvas>
 <div class="scanlines" aria-hidden="true"></div>
@@ -1593,12 +1601,12 @@
 
   <!-- ========== HERO ========== -->
   <section class="hero" aria-labelledby="who">
-    <p class="kicker mono">// PROFILE — SECTOR 07 — CLEARANCE GRANTED</p>
+    <p class="kicker mono">// Profile</p>
     <h1 id="who">
       <button class="name-btn" id="nameBtn" aria-haspopup="dialog" aria-controls="contactOverlay">
         <span class="name-line">Chintan</span>
         <span class="name-line">Dhamecha</span>
-        <span class="name-hint mono" aria-hidden="true">open credentials</span>
+        <span class="name-hint mono" aria-hidden="true">contact</span>
       </button>
     </h1>
     <p class="role mono">Digital Transformation <span>&amp;</span> Operations</p>
@@ -1616,38 +1624,38 @@
 
   <!-- ========== EXPERIENCE ========== -->
   <section class="timeline-sec" id="experience" aria-labelledby="tl-h">
-    <h2 id="tl-h" class="sec-h">◦ Deployment History</h2>
-    <p class="sec-sub">Three deployments · select a marker to pull the log entry</p>
+    <h2 id="tl-h" class="sec-h">◦ Experience</h2>
+    <p class="sec-sub">Three roles · select one for detail</p>
     <ol class="timeline" id="timeline" role="list"></ol>
   </section>
 
   <!-- ========== PROJECTS (standalone case files) ========== -->
   <section class="casefiles-sec" id="projects" aria-labelledby="pj-h">
-    <h2 id="pj-h" class="sec-h">◦ Case Files — Project Dossiers</h2>
-    <p class="sec-sub">Four professional projects · open a file for context, approach and outcome</p>
-    <p class="cf-hint" aria-hidden="true">scroll the strip · files 01–04</p>
+    <h2 id="pj-h" class="sec-h">◦ Projects</h2>
+    <p class="sec-sub">Four projects · select one for detail</p>
+    <p class="cf-hint" aria-hidden="true">scroll · 01–04</p>
     <div class="casefiles" id="casefiles" role="region"
-         aria-label="Project case files — horizontally scrollable, use arrow keys" tabindex="0"></div>
+         aria-label="Projects — horizontally scrollable, use arrow keys" tabindex="0"></div>
   </section>
 
   <!-- ========== EDUCATION (degree + its nested project, one panel each) ========== -->
   <section class="timeline-sec" id="education" aria-labelledby="edu-h">
-    <h2 id="edu-h" class="sec-h">◦ Academic Record — Degrees</h2>
-    <p class="sec-sub">Two colleges · select one for the degree and its project</p>
+    <h2 id="edu-h" class="sec-h">◦ Education</h2>
+    <p class="sec-sub">Two colleges · select one for detail</p>
     <ol class="timeline timeline--edu" id="eduline" role="list"></ol>
   </section>
 
   <!-- ========== CERTIFICATIONS ========== -->
   <section class="certs-sec" id="certifications" aria-labelledby="ct-h">
-    <h2 id="ct-h" class="sec-h">◦ Certifications — Credentials On File</h2>
-    <p class="sec-sub">Five credentials · select one for the certificate</p>
+    <h2 id="ct-h" class="sec-h">◦ Certifications</h2>
+    <p class="sec-sub">Five certificates · select one to view</p>
     <ul class="certs" id="certs"></ul>
   </section>
 
   <!-- ========== SKILLS ========== -->
   <section class="skills-sec" id="skills" aria-labelledby="sk-h">
-    <h2 id="sk-h" class="sec-h">◦ Capability Constellation</h2>
-    <p class="sec-sub">22 tracked competencies · select a node for the readout</p>
+    <h2 id="sk-h" class="sec-h">◦ Skills</h2>
+    <p class="sec-sub">22 skills · select one for detail</p>
     <div class="constellation" id="constellation">
       <canvas id="links" aria-hidden="true"></canvas>
       <ul class="node-fallback" id="nodeFallback" aria-hidden="true"></ul>
@@ -1658,7 +1666,7 @@
   <!-- ========== LEADERSHIP ========== -->
   <section class="lead-sec" id="leadership" aria-labelledby="ld-h">
     <h2 id="ld-h" class="sec-h">◦ Leadership</h2>
-    <p class="sec-sub">Where the work was led, drawn from the record</p>
+    <p class="sec-sub">Where I've led</p>
     <ul class="cmd-log">
       <li class="cmd-row"><span class="c-verb">Led</span><span class="c-txt">End-to-end procurement, SAP&nbsp;PLM/DMS and business operations across India, Germany, the Netherlands and China.<span class="c-where">Cross-border · 4.5+ years</span></span></li>
       <li class="cmd-row"><span class="c-verb">Led</span><span class="c-txt">UAT cycles across multiple SAP modules; coordinated with PMO as the connective layer to the technical delivery team.<span class="c-where">Daimler India Commercial Vehicles</span></span></li>
@@ -1670,7 +1678,7 @@
 
   <!-- ========== CONTACT ========== -->
   <section class="contact-sec" id="contact" aria-labelledby="cn-h">
-    <h2 id="cn-h" class="sec-h">◦ Contact — Open Channel</h2>
+    <h2 id="cn-h" class="sec-h">◦ Contact</h2>
     <p class="sec-sub">Direct lines</p>
     <div class="contact-grid">
       <a class="contact-row" href="mailto:chintandhamecha12@gmail.com"><span class="k">Email</span><span class="v">chintandhamecha12@gmail.com</span></a>
@@ -1758,11 +1766,11 @@
   <aside class="role-panel" id="rolePanel" role="dialog" aria-modal="true" aria-labelledby="rpCo">
     <div class="rp-hd">
       <div>
-        <span class="rp-tag mono" id="rpTag">Log entry</span>
+        <span class="rp-tag mono" id="rpTag">Detail</span>
         <span class="rp-co" id="rpCo">—</span>
         <span class="rp-title mono" id="rpTitle">—</span>
       </div>
-      <button type="button" class="icon-btn close-modal" data-close aria-label="Close log entry">✕</button>
+      <button type="button" class="icon-btn close-modal" data-close aria-label="Close">✕</button>
     </div>
     <div class="rp-meta" id="rpMeta"></div>
     <div id="rpBody"></div>
@@ -1810,13 +1818,13 @@
 </div>
 
 <!-- ========== SKILL READOUT POPOVER ========== -->
-<div class="readout" id="readout" role="dialog" aria-label="Skill readout" hidden>
+<div class="readout" id="readout" role="dialog" aria-label="Skill detail" hidden>
   <div class="readout-hd">
     <div>
       <span class="readout-cat mono" id="roCat">Technical</span>
       <h3 id="roName">—</h3>
     </div>
-    <button type="button" class="icon-btn" id="roClose" aria-label="Close readout">✕</button>
+    <button type="button" class="icon-btn" id="roClose" aria-label="Close">✕</button>
   </div>
   <div class="readout-body">
     <div class="gauge">
@@ -2427,8 +2435,8 @@
     });
   }
 
-  buildTimeline(document.getElementById("timeline"), EXPERIENCE, "Log entry");
-  buildTimeline(document.getElementById("eduline"), EDU, "Academic record");
+  buildTimeline(document.getElementById("timeline"), EXPERIENCE, "Role");
+  buildTimeline(document.getElementById("eduline"), EDU, "Education");
 
   /* PROJECTS — case-file filmstrip (opens the same dossier panel) */
   function buildCaseFiles(el, items){
@@ -2442,12 +2450,12 @@
       btn.setAttribute("aria-controls", "roleOverlay");
       btn.setAttribute("aria-expanded", "false");
       btn.innerHTML =
-        '<span class="cf-no">Case ' + no + ' / ' + total + '</span>' +
+        '<span class="cf-no">' + no + ' / ' + total + '</span>' +
         '<span class="cf-title">' + esc(it.co) + '</span>' +
         '<span class="cf-org">' + esc(it.org) + '</span>' +
         '<span class="cf-teaser">' + esc(it.teaser) + '</span>' +
-        '<span class="cf-open" aria-hidden="true">Open file</span>';
-      btn.addEventListener("click", function(){ openDetail(it, "Case file", btn); });
+        '<span class="cf-open" aria-hidden="true">Open</span>';
+      btn.addEventListener("click", function(){ openDetail(it, "Project", btn); });
       el.appendChild(btn);
       allMarkers.push(btn);
     });
@@ -2531,7 +2539,7 @@
         '<span class="c-name">' + esc(c.name) + '</span>' +
         '<span class="c-body">' + esc(c.issuer) + '</span>' +
         '<span class="c-yr mono">' + esc(c.year) + '</span>' +
-        '<span class="c-open" aria-hidden="true">View credential ▸</span>';
+        '<span class="c-open" aria-hidden="true">View certificate ▸</span>';
       btn.addEventListener("click", function(){ openCert(c, btn); });
       li.appendChild(btn);
       el.appendChild(li);
@@ -4516,14 +4524,15 @@
     var dt = Math.min(0.05, Math.max(0, (now - bgPrev) / 1000));   // clamp big gaps (tab switch)
     bgPrev = now;
     var pe = easeInOut(forceProg != null ? forceProg : scrollProg());
+    var busy = popupOpen();                       // a modal / popover / detail panel is open
+    document.body.classList.toggle("panel-open", busy);
     try {
       bctx.clearRect(0, 0, bw, bh);
       if (THEME === "light"){
         stepBirds(dt);
         drawBeach(t, pe, dt);
       } else {
-        stepSpaceFacts(dt);
-        followFactChip();
+        if (!busy){ stepSpaceFacts(dt); followFactChip(); }
         if (pe < 0.98){
           bctx.globalAlpha = 1 - pe;
           bctx.drawImage(gridLayer, 0, 0, bw, bh);
@@ -4531,8 +4540,7 @@
         }
         drawStars(t);
         drawSolarSystem(t, pe);
-        drawShooting(t);
-        drawShockwaves(t);
+        if (!busy){ drawShooting(t); drawShockwaves(t); }
       }
     } catch (err) { /* keep the loop alive through a bad frame */ }
 
